@@ -488,7 +488,7 @@ function handleQuickAction(templateType) {
         'backup': 4,
         'list': 99,
         'error': 7,
-        '2step': 2,
+        '2step': 23,
         'qr': 8,
         'queue': 20,
         'done': 14,
