@@ -146,9 +146,9 @@ Pastikan status email menjadi ✅ “Terverifikasi”
 Kalau sudah, lanjut ke buat kode backup
 
 ──────────────────
-🔐 CARA BUAT KODE BACKUP
+🎏 CARA BUAT KODE BACKUP
 
-🔐 LANGKAH 1: AKTIFKAN VERIFIKASI 2 LANGKAH (WAJIB PAKE OPSI EMAIL)
+🔐 LANGKAH 1: AKTIFKAN VERIFIKASI 2 LANGKAH
 
 1. Buka Roblox, Klik ikon tiga garis (≡) → Pengaturan → Keamanan
 2. Scroll ke bagian "Verifikasi 2 Langkah"
@@ -161,7 +161,7 @@ Kalau sudah, lanjut ke buat kode backup
 7. Kembali ke aplikasi Roblox → Masukkan kode 6 digit tadi
 8. Klik "Verifikasi" 
 
-🔐LANGKAH 2: BUAT KODE BACKUP
+🧩 LANGKAH 2: BUAT KODE BACKUP
 Setelah verifikasi 2 langkah aktif:
 
 1. Masih di menu Keamanan, scroll ke bawah ke "Kode Pemulihan"
