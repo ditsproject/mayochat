@@ -11,7 +11,7 @@ nanti bakal muncul list harga robux , pilihan negara dan qr untuk payment , sete
         id: 14,
         name: "Terima Kasih",
         category: "other",
-        content: `samaa samaa kakaaa jangan lupa ganti pw dan reset kode backupnya yaahh
+        content: `samaa samaa kakaaa jangan lupa ganti pw dan reset kode backupnya yaahh        
 
 ditunggu orderan berikutnya ^_^`
     },
@@ -19,37 +19,36 @@ ditunggu orderan berikutnya ^_^`
         id: 99,
         name: "Klik List",
         category: "other",
-        content: `aloo kak gass di klik nominal yang mau di beli nanti muncul qr, qrnya bisa all payment yahh kamu scan aja di aplikasi pembayaran kamu, setelah payment kirim data akun kamu lalu akan mimin proses sesuai antrian ^.^`
+        content: `aloo kak gass di klik nominal yang mau di beli nanti muncul qr , qrnya bisa all payment yahh kamu scan aja di aplikasi pembayaran kamu , setelah payment kirim data akun kamu lalu akan mimin proses sesuai antrian ^.^`
     },
     {
         id: 15,
         name: "Order Prem",
         category: "order",
-        content: `Aloo kakk Premium Via Login ordernya di website yaaa
+        content: `aloo kakk Premium Via Login ordernya di website yaaa
 
-Cara order di website:
-1. Buka: mayoblox.com/robux
-2. Kalo gabisa dibuka Pakai Chrome/Safari
-3. Pilih "Robux via Login"
-4. Pilih "Order Via Website"
-5. Isi username , password , kode backup dan no wa
-6. Ikuti tutorial di website
-7. Pilih nominal → bayar via QR
+cara order di website:
+buka mayoblox.com/robux (bukanya di chrome / safari) biar gak error
+pilih "Robux via Login"
+pilih "Order Via Website"
+isi username , password , kode backup dan no wa
+ikuti tutorial di website
+pilih nominal → bayar via QR
 
-Website gabisa dibuka?
-• Pakai Chrome/Safari
-• Loadingnya lama? Tungguin aja`
+website gabisa dibuka?
+pake Chrome/Safari
+loadingnya lama? tungguin aja`
     },
     {
         id: 8,
         name: "Salah Klik QR",
         category: "status",
-        content: `Kaka Salah klik nominal / Mau ganti nominal yaa kak
+        content: `salah klik nominal / mau ganti nominal yaa kak
 
-Gabisa Langsung Ganti yaa kak, Tunggu waktu QR di atas abis dulu
-Baru order lagi dengan nominal baru
+gabisa langsung ganti yaa kak , tunggu transaksi dibatalkan otomatis dulu
+baru bisa order lagi dengan nominal baru
 
-Jadi ditunggu dulu aja yaa kak sampe waktu qrnya abis ^.^`
+jadi ditunggu dulu aja yaa kak sampe waktu qr di atas abis ^.^`
     },
     {
         id: 20,
