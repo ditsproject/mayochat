@@ -299,9 +299,60 @@ Masih bingung? Screenshoot, kirim ke mimin`
     },
     {
         id: 10,
-        name: "Boleh Di Mainin",
+        name: "Prem Explain",
         category: "status",
-        content: `Akunnya boleh sambil dimainin, yang gak boleh itu pencet LOG OUT ALL DEVICE / KELUARKAN SEMUA PERANGKAT`
+        content: `Apa itu Roblox Premium?
+Roblox Premium itu langganan berdurasi 1 bulan yang kasih beberapa keuntungan ke akun Roblox kamu.
+
+Benefit Roblox Premium:
+
+• Dapet Robux sesuai paket yang dibeli
+     • Premium 450 → dapet 450 Robux
+     • Premium 1000 → dapet 1000 Robux
+     • Premium 2200 → dapet 2200 Robux
+         ➜ Gak kurang, gak lebih
+     • Dapet bonus 10% Robux setiap top up, TAPI cuma kalau Premium sedang aktif
+     • Bisa trade item (fitur khusus Premium)
+
+Masa aktif Premium:
+
+     • Aktif 1 bulan
+     • Tidak otomatis bayar tiap bulan
+     • Sekali beli, aktif 1 bulan, selesai
+
+Premium TIDAK bisa di-stack:
+
+     • Kalau Premium masih aktif, TIDAK bisa beli Premium lagi
+     • Beli premium lagi saat masih aktif → GA BISA dan durasi GA NAMBAH
+     • Ini aturan langsung dari Roblox
+
+Bonus 10% Robux itu kapan?
+
+     • Bonus 10% hanya berlaku kalau Premium SUDAH aktif
+     • Kalau top up sebelum Premium aktif → TIDAK dapet bonus
+     • Jadi urutannya: aktifin Premium dulu → baru top up → dapet bonus 10%
+
+Kapan bisa beli Premium lagi?
+
+     • Hanya setelah Premium habis
+     • Kalau sudah habis, bebas mau beli nominal berapa aja
+        Contoh:
+          • Bulan ini Premium 450
+          • Bulan depan setelah habis, mau ganti ke Premium 2200 → BISA
+
+Pas Premium aktif, bisa ganti nominal?
+
+     • GAK BISA
+     • Bulan ini Premium 450 (masih aktif) , Mau ganti ke Premium 2200 → GAK BISA
+     • Kalau Premium masih aktif, mutlak gak bisa diapa-apain
+
+Ringkasannya:
+
+• Premium cuma 1 bulan
+• Gak otomatis perpanjang
+• Gak bisa di-stack
+• Bonus 10% cuma pas Premium aktif
+• Beli Premium cuma bisa kalau Premium sebelumnya sudah habisAkunnya boleh sambil dimainin, yang gak boleh itu pencet LOG OUT ALL DEVICE / KELUARKAN SEMUA PERANGKAT`
     },
     {
         id: 11,
@@ -510,7 +561,7 @@ function handleQuickAction(templateType) {
         '2step': 23,
         'qr': 8,
         'queue': 20,
-        'done': 14,
+        'prem': 10,
         'thanks': 14,
         'premium': 15,
         'fix': 25,
