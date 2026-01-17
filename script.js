@@ -352,7 +352,7 @@ Ringkasannya:
 • Gak otomatis perpanjang
 • Gak bisa di-stack
 • Bonus 10% cuma pas Premium aktif
-• Beli Premium cuma bisa kalau Premium sebelumnya sudah habisAkunnya boleh sambil dimainin, yang gak boleh itu pencet LOG OUT ALL DEVICE / KELUARKAN SEMUA PERANGKAT`
+• Beli Premium cuma bisa kalau Premium sebelumnya sudah habis`
     },
     {
         id: 11,
