@@ -4,8 +4,8 @@ const templatesData = [
         id: 1,
         name: "Cara Order Simple",
         category: "order",
-        content: `aloo kakk, gass order di klik menunya yaahhh
-nanti bakal muncul list harga robux , pilihan negara dan qr untuk payment , setelah payment kaka kirim data akun kaka usn pw dan kode backup lalu akan mimin proses sesuai antrian ^_^`
+        content: `aloo kak , gass order di klik menunya yaahh
+pilih robux via login , nanti bakal muncul list harga robux , klik nominal yang mau kamu beli , bakal ada qr otomatis , qr nya bisa all payment yahh kamu scan aja di aplikasi pembayaran kamu , setelah pembayaran kamu kirim data login akun kamu: usn, pw dan kode backup . lalu akan mimin proses sesuai antrian ^,^`
     },
     {
         id: 14,
@@ -1326,4 +1326,5 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('toggleAllBtn').addEventListener('click', toggleAllTemplates);
     
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
+
 });
