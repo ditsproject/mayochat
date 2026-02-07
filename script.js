@@ -62,6 +62,22 @@ jadi ditunggu dulu aja yaa kak sampe waktu qr di atas abis ^.^`
         content: `oke kak udah aku data ulang, wet yahh nanti di kabarin lagihh`
     },
     {
+        id: 32,
+        name: "Bc Simple",
+        category: "keamanan",
+        content: `Cara Buat Backup Code:
+1. Buka aplikasi Roblox di HP kamu.
+2. Login ke akun → tekan ikon tiga titik (≡ / More) di pojok kanan bawah.
+3. Scroll ke bawah → pilih Settings (Pengaturan).
+4. Masuk ke menu Security (Keamanan).
+5. Aktifkan dulu 2-Step Verification (2SV) pakai email atau authenticator.
+6. Setelah aktif, akan muncul pilihan Generate Backup Codes (Buat Kode Cadangan).
+7. Tekan itu → kode cadangan akan muncul.
+8. Simpan kode tersebut (catat, screenshot, atau copy ke password manager).
+
+⚠️ Penting: kode cadangan cuma bisa ditampilkan sekali saat dibuat. Jadi jangan sampai lupa ss ya.`
+    },
+    {
         id: 6,
         name: "PW Salah",
         category: "problem",
@@ -1323,5 +1339,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
