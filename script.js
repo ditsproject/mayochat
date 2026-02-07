@@ -4,14 +4,14 @@ const templatesData = [
         id: 1,
         name: "Cara Order Simple",
         category: "order",
-        content: `aloo kak , gass order di klik menunya yaahh
-pilih robux via login , nanti bakal muncul list harga robux , klik nominal yang mau kamu beli , bakal ada qr otomatis , qr nya bisa all payment yahh kamu scan aja di aplikasi pembayaran kamu , setelah pembayaran kamu kirim data login akun kamu: usn, pw dan kode backup . lalu akan mimin proses sesuai antrian ^,^`
+        content: `aloo kak , gass order di klik menunya
+pilih robux via login, bakal muncul list harga robux, pilih dan klik nominal yang mau kamu beli, bakal ada qr otomatis, qr nya bisa all payment yahh, di scan aja, setelah bayar kirim kelengkapan login akun kamu: usn, pw dan kode backup . lalu akan mimin proses sesuai antrian ^,^`
     },
     {
         id: 14,
         name: "Terima Kasih",
         category: "other",
-        content: `samaa samaa kakaaa jangan lupa ganti pw dan reset kode backupnya yaahh        
+        content: `terimakacii kembali kakkk jangan lupa ganti pw dan reset kode backupnya yaahh       
 
 ditunggu orderan berikutnya ^_^`
     },
@@ -19,14 +19,13 @@ ditunggu orderan berikutnya ^_^`
         id: 99,
         name: "Klik List",
         category: "other",
-        content: `aloo kak gass di klik nominal yang mau di beli nanti muncul qr , qrnya bisa all payment yahh kamu scan aja di aplikasi pembayaran kamu , setelah payment kirim data akun kamu lalu akan mimin proses sesuai antrian ^.^`
+        content: `aloo kak gass di klik nominal yang mau di beli nanti muncul qr otomatis, qr nya bisa all payment yahh, setelah bayar kirim kelengkapan login akun kamu lalu akan mimin proses sesuai antrian ^.^`
     },
     {
         id: 15,
-        name: "Order Prem",
+        name: "Order Web",
         category: "order",
-        content: `aloo kakk Premium Via Login ordernya di website yaaa
-
+        content: `
 cara order di website:
 buka mayoblox.com/robux (bukanya di chrome / safari) biar gak error
 pilih "Robux via Login"
@@ -60,7 +59,7 @@ jadi ditunggu dulu aja yaa kak sampe waktu qr di atas abis ^.^`
         id: 25,
         name: "Perbaikan Tele",
         category: "problem",
-        content: `oke kak udah aku data ulang, wet ingyah nanti di kabarin lagihh`
+        content: `oke kak udah aku data ulang, wet yahh nanti di kabarin lagihh`
     },
     {
         id: 6,
@@ -199,14 +198,14 @@ Kalau tetap error:
         id: 9,
         name: "Estimasi",
         category: "status",
-        content: `estimasi normal via login 3-5 jam, kalo antrian lagi panjang paling lama 24 jam
-kalo belum lewat dari estimasi ditunggu aja ya kakaa , mimin proses secepatnya`
+        content: `estimasi normal via login 15-30 menit , kalo antrian lagi panjang paling lama 3 jam
+kalo belum lewat dari estimasi ditunggu aja ya kakakk , mimin proses secepatnya`
     },
     {
         id: 29,
         name: "Hubungi CS",
         category: "status",
-        content: `── kaka chat ke cs ya biar di bantu : @mayobloxcs`
+        content: `kaka chat ke cs yaa biar di bantu @mayobloxcs`
     },
     {
         id: 2,
@@ -362,19 +361,15 @@ Ringkasannya:
 
 1. Buka roblox.com di browser
 2. Klik "Forgot Username or Password"
-3. Masukkan email/username yang terdaftar
-4. Pilih "Email" → Submit
-5. Buka email → cari email dari Roblox
-6. Klik link reset di email
-7. Buat password baru:
-   • Minimal 8 karakter
-   • Kombinasi huruf besar & kecil
-   • Contoh: Roblox123!
-8. Konfirmasi password → Submit
-9. Login dengan password baru
+3. Masukkan email/username yang terdaftar → Submit
+4. Buka email → cari email dari Roblox
+5. Klik link reset di email
+6. Buat password baru
+7. Konfirmasi password → Submit
+8. Login dengan password baru
 
 SETELAH RESET:
-Kirim ulang usn dan pw baru kamu`
+Kirim ulang usn dan password baru kamu`
     },
     {
         id: 16,
@@ -385,13 +380,13 @@ order via gamepass ke web yahh
 
 buka mayoblox.com/robux (bukanya di chrome/safari biar gak error)
 pilih "Robux Gamepass PO"
-isi username kamu dan masukin nominal robux yang mau kamu beli , nanti bakalah ada harga di sebelahnya
-masukin no wa kamu
+isi username kamu dan masukin nominal robux yang mau kamu beli, nanti bakalah ada harga di sebelah kanan
+masukin no wa kamu (jangan asal yah)
 
-list harga robux gamepass gaada yah, harga hanya akan muncul kalo kamu udah masukin nominal robuxnya
-harga bakal ngikutin jumlah robux yang kamu masukin , misal dana kamu 20k , masukin aja nominal robuxnya sampe harganya 20k
+list harga robux gamepass gaada yaa kak, harga hanya akan muncul kalo kamu udah masukin nominal robuxnya
+harga akan menyesuaikan nominal robux, jadi di sesuaikan aja kamu maunya beli berapa
 
-habis itu pilih metode payment , klik beli sekarang
+habis itu pilih metode payment, klik beli sekarang
 
 tonton tutorial sampe selesai biar gak bingung dan gak salah.
 setelah tonton tutorial sampe selesai klik lanjutkan
@@ -413,22 +408,22 @@ cara order, cara buat gamepass, pertanyaan dan kendala, kaka bisa chat ke cs ya 
         id: 21,
         name: "Problem Web",
         category: "problem",
-        content: `kak itu data akun kaka salah jadinya gabisa di loginin dan gabisa di proses.
-kaka klik link yang dikasih yaa terus kirim ulang perbaikan data akun kaka yang benar biar mimin bisa login dan bisa proses.
-pastiin data yang di kirim bener yaa kak, bagusnyaa sebelum kirim kamu cek dulu login di web roblox.com/login , kalo berhasil login baru kamu kirim datanya, kalo ga berhasil login usn/pw salah / kode backup invalid, itu kamu perbaikin dulu datanya baru kamu kirim data nya ke web`
+        content: `itu data akun kamu ada yang salah jadinya gabisa di loginin dan gabisa di proses.
+kamu perbaikin dulu data login nya, kamu cek login sendiri udah bisa atau belum, kalo udah bisa baru kamu kirim data perbaikannya.
+pastiin data yang kamu kirim bener yah biar ga ada kendala lagi dan robux kamu bisa masuk`
     },
     {
         id: 22,
         name: "Regenerate Kode Baru",
         category: "security",
         content: `Harus pake kode backup yang baru ya kakaa
-Caranya sama aja kaya pas awal buat, karna sebelumnya udah buat jadi gaharus verif email lagi
+Caranya sama aja kaya pas awal buat,
 
 STEP BY STEP:
 1. Buka aplikasi Roblox
 2. Login → ikon tiga titik (≡) → Settings
 3. Pilih Security → Scroll Kebawah
-5. KLIK "Generate Backup Codes" (kliknya sekali aja, tunggu sampe popup muncul biar ga eror)
+5. KLIK "Buat / Generate" (kliknya sekali aja, tunggu sampe popup muncul biar ga eror)
 6. Masukin kode dari email
 6. Tunggu kode muncul (5-10 detik) ss kodenya buat kamu simpan biar ga lupa
 7. Salin 5 kode → kirim ke mimin (jangan di ss!)`
@@ -1328,4 +1323,5 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
