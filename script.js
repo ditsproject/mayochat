@@ -43,7 +43,7 @@ loadingnya lama? tungguin aja`
         id: 8,
         name: "Salah Klik QR",
         category: "status",
-        content: `salah klik nominal / mau ganti nominal yaa kak
+        content: `salah klik / mau ganti nominal yaa kak
 
 gabisa langsung ganti yaa kak , tunggu transaksi dibatalkan otomatis dulu
 baru bisa order lagi dengan nominal baru
@@ -1328,3 +1328,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
