@@ -13,51 +13,62 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <div class="logo">
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <div class="logo">
+                <a href="login.html" class="logo-link" title="">
                     <i class="fas fa-shopping-cart"></i>
-                    <h1>Take Order</h1>
-                </div>
-                <p class="tagline">Created by Dits ^.^</p>
+                </a>
+                <h1>Take Order</h1>
             </div>
-            
-            <div class="nav-controls">
-                <div class="search-box">
-                    <i class="fa fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Cari template...">
+            <p class="tagline">Created by Dits ^.^</p>
+        </div>
+        
+        <div class="nav-controls">
+            <div class="search-box">
+                <i class="fa fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari template...">
+            </div>
+            <button id="themeToggle" class="theme-btn">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button id="showStats" class="stats-btn">
+                <i class="fas fa-chart-bar"></i>
+                <span class="stat-badge">0</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+   <!-- Main Content -->
+<main class="main-container">
+    <!-- Hero Section -->
+<section class="hero">
+    <div class="container-main">
+        <div class="container-banner">
+            <div class="image-banner-hero">
+                <img src="https://mayoblox.com/template-user/assets/images/hero/img-hero-main.webp" alt="Banner Mayoblox">
+            </div>
+            <div class="title-banner-hero">
+                <div>
+                    <h1><i class="fas fa-fire"></i> Template Chat</h1>
+                    <p>Click to Copy 📋</p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <i class="fas fa-copy"></i>
+                            <span><strong id="totalUsed">0</strong> template dipakai hari ini</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-clock"></i>
+                            <span>Online: <strong>24 jam</strong></span>
+                        </div>
+                    </div>
                 </div>
-                <button id="themeToggle" class="theme-btn">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <button id="showStats" class="stats-btn">
-                    <i class="fas fa-chart-bar"></i>
-                    <span class="stat-badge">0</span>
-                </button>
             </div>
         </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h2><i class="fas fa-fire"></i> Template Chat</h2>
-                <p>Click to Copy 📋</p>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <i class="fas fa-copy"></i>
-                        <span><strong id="totalUsed">0</strong> template dipakai hari ini</span>
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-clock"></i>
-                        <span>Online: <strong>24 jam</strong></span>
-                    </div>
-                </div>
-            </div>
-        </section>
+    </div>
+</section>
 
         <!-- Quick Actions -->
         <section class="quick-actions-section">
@@ -335,6 +346,7 @@
     </button>
 
     <script src="script.js"></script>
+    <script src="script-login.js"></script>
 </body>
 
 </html>

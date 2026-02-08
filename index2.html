@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vilog Admin</title>
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ==================== CSS VARIABLES ==================== */
+        :root {
+            --bg: #fef6f9;
+            --card: #ffffff;
+            --pink: #f9b4c7;
+            --pink-dark: #f184a0;
+            --text: #5c3b4e;
+            --muted: #8d7a85;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+            --container: 1200px;
+            --gap: 1rem;
+            --success: #10b981;
+            --success-light: #a7f3d0;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --primary: #8a2be2;
+            --secondary: #ff69b4;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        body.dark {
+            --bg: #1a1a1a;
+            --card: #2b2b2b;
+            --text: #f5f5f5;
+            --muted: #bbb;
+            --pink: #f57ca1;
+            --pink-dark: #ff9dbb;
+            --shadow: 0 2px 12px rgba(255,255,255,0.05);
+            --shadow-hover: 0 4px 20px rgba(255,255,255,0.1);
+            --success: #34d399;
+            --success-light: #a7f3d0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            min-width: 280px;
+            padding-top: 50px;
+        }
+
+        /* ==================== NAVBAR STYLE ==================== */
+        .main-nav {
+            background: var(--card);
+            box-shadow: var(--shadow);
+            padding: clamp(0.3rem, 2vw, 0.75rem) 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            min-width: 280px;
+            width: 100%;
+        }
+
+        .nav-container {
+            max-width: min(95%, 1200px);
+            margin: 0 auto;
+            padding: 0 clamp(0.25rem, 2vw, 1rem);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: clamp(0.1rem, 1vw, 1rem);
+            flex-wrap: nowrap;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: clamp(4px, 1vw, 8px);
+            font-weight: 700;
+            font-size: clamp(0.8rem, 3vw, 1.1rem);
+            flex-shrink: 1;
+            white-space: nowrap;
+            min-width: 0;
+            color: var(--text);
+        }
+
+        .nav-user {
+            color: var(--text);
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .theme-toggle {
+            background: var(--pink);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: clamp(2px, 1vw, 6px) clamp(4px, 1.5vw, 10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(0.6rem, 2vw, 0.9rem);
+            font-family: inherit;
+            flex-shrink: 0;
+            min-width: clamp(24px, 6vw, 40px);
+        }
+
+        .theme-toggle:hover {
+            background: var(--pink-dark);
+        }
+
+        .logout-btn {
+            background: var(--pink);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: clamp(2px, 1vw, 6px) clamp(4px, 1.5vw, 10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(0.6rem, 2vw, 0.9rem);
+            font-family: inherit;
+            flex-shrink: 0;
+            min-width: clamp(24px, 6vw, 40px);
+            margin-right: 10px;
+        }
+
+        .logout-btn:hover {
+            background: var(--pink-dark);
+        }
+
+        /* ==================== CONTAINER & LAYOUT ==================== */
+        .container {
+            max-width: min(95%, 1200px);
+            margin: 0 auto;
+            padding: 0 clamp(0.5rem, 3vw, 1rem);
+        }
+
+        /* ==================== TAB CONTENT ==================== */
+        .tab-content {
+            display: none;
+            background: var(--card);
+            padding: clamp(1rem, 3vw, 2rem);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+            min-height: 400px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+            flex-wrap: wrap;
+            gap: clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .tab-header h2 {
+            color: var(--text);
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* ==================== SEARCH BOX ==================== */
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+            padding-right: clamp(2.5rem, 6vw, 3rem);
+            border: 2px solid var(--pink);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--pink-dark);
+            box-shadow: 0 0 0 3px rgba(249, 180, 199, 0.2);
+        }
+
+        .search-box input::placeholder {
+            color: var(--muted);
+            opacity: 0.7;
+        }
+
+        /* ==================== TEMPLATE CARDS ==================== */
+        .template-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: clamp(1rem, 3vw, 1.5rem);
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--pink);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .template-card h3 {
+            margin-bottom: clamp(0.75rem, 2vw, 1rem);
+            color: var(--pink-dark);
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: 600;
+        }
+
+        .template-content {
+            background: var(--bg);
+            padding: clamp(1rem, 3vw, 1.5rem);
+            border-radius: 8px;
+            white-space: pre-line;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            line-height: 1.6;
+            color: var(--text);
+            border: 1px solid var(--pink);
+            transition: all 0.3s ease;
+            min-height: 80px;
+        }
+
+        .template-card:hover .template-content {
+            border-color: var(--pink-dark);
+            background: rgba(249, 180, 199, 0.05);
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .btn {
+            display: inline-block;
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+            background: var(--pink);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: var(--pink-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-copy {
+            background: var(--success);
+            margin-top: clamp(0.75rem, 2vw, 1rem);
+        }
+
+        .btn-copy:hover {
+            background: var(--success);
+            filter: brightness(1.1);
+        }
+
+        .btn-copy.copied {
+            background: var(--success);
+            transform: scale(0.98);
+        }
+
+        /* ==================== FORM ELEMENTS ==================== */
+        .form-group {
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: clamp(0.25rem, 1vw, 0.5rem);
+            font-weight: 500;
+            color: var(--text);
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+            border: 1px solid var(--pink);
+            border-radius: var(--radius);
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--pink-dark);
+            box-shadow: 0 0 0 3px rgba(249, 180, 199, 0.2);
+        }
+
+        /* ==================== FOOTER ==================== */
+        footer {
+            text-align: center;
+            padding: clamp(1rem, 3vw, 2rem) clamp(0.5rem, 2vw, 1rem);
+            margin-top: clamp(2rem, 6vw, 4rem);
+            color: var(--muted);
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ==================== TOAST NOTIFICATION ==================== */
+        .toast {
+            position: fixed;
+            bottom: clamp(1rem, 3vw, 1.5rem);
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+            border-radius: var(--radius);
+            font-weight: 500;
+            box-shadow: var(--shadow-hover);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            text-align: center;
+            max-width: min(90%, 300px);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ==================== TOGGLE PASSWORD ==================== */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-container .form-control {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-icon {
+            font-size: 1rem;
+            user-select: none;
+        }
+
+        /* ==================== PIN PROTECTION STYLES ==================== */
+        #vilog-pin-protection {
+            width: 100%;
+        }
+
+        .pin-protection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            padding: 2rem;
+        }
+
+        .pin-box {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-hover);
+            border: 2px solid var(--pink);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .pin-box h3 {
+            color: var(--pink-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .pin-box p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .pin-box .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .pin-box .password-container {
+            position: relative;
+        }
+
+        .pin-box .form-control {
+            padding-right: 50px;
+            width: 100%;
+        }
+
+        .pin-box .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.2rem;
+        }
+
+        .pin-box .btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .pin-box .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* ==================== RESPONSIVE DESIGN ==================== */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+            
+            .tab-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 55px;
+            }
+            
+            .main-nav {
+                height: 55px;
+                padding: 0.5rem 0;
+            }
+            
+            .container {
+                padding: 0 0.5rem;
+            }
+            
+            .nav-logo {
+                font-size: 1rem;
+            }
+            
+            .tab-content {
+                padding: 1rem;
+            }
+            
+            .template-card {
+                padding: 1rem;
+            }
+            
+            .template-content {
+                font-size: 0.9rem;
+                padding: 12px;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .form-control {
+                padding: 10px;
+            }
+        }
+
+        /* ==================== DARK MODE IMPROVEMENTS ==================== */
+        body.dark .template-content {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--pink);
+        }
+
+        body.dark .search-box input {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark .toggle-password:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Pastikan footer selalu di bawah */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+/* Logo dengan link */
+.logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.logo-link i {
+    font-size: 2rem;
+    color: var(--pink);
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover i {
+    color: var(--pink-dark);
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+        .main-content {
+            flex: 1;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container -->
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <div class="logo">
+                <a href="index.html" class="logo-link" title="">
+                    <i class="fas fa-shopping-cart"></i>
+                </a>
+                <h1>LOLOLOLOLOL</h1>
+            </div>
+                <div class="nav-user">
+                    Halo,<span id="userDisplayName">User</span>! 👋
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                    <div class="theme-toggle-container">
+                        <button class="theme-toggle" id="theme-toggle">
+                            <span id="theme-icon">🌙</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <br>
+        <br>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Tab Vilog dengan PIN Protection -->
+            <div class="tab-content active" id="vilog">
+                <div class="tab-header">
+                    <h2>Vilog Only</h2>
+                </div>
+                
+                <!-- PIN Protection Screen -->
+                <div id="vilog-pin-protection">
+                    <div class="pin-protection">
+                        <div class="pin-box">
+                            <h3>🔒 Masukkan Secret Key</h3>
+                            <p>yang vilog vilog ajah</p>
+                            
+                            <div class="form-group">
+                                <label for="vilog-pin">Key:</label>
+                                <div class="password-container">
+                                    <input type="password" id="vilog-pin" class="form-control" placeholder="Masukkan Secret Key" maxlength="20">
+                                    <button type="button" class="toggle-password" id="toggleVilogPin">
+                                        <span class="toggle-icon">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button class="btn" onclick="checkVilogPin()">Buka Vilog</button>
+                            <div class="error-message" id="pin-error" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vilog Content (Awalnya Disembunyikan) -->
+                <div id="vilog-container" style="display: none;"></div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <p>Made with 💗</p>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        const VILOG_PIN = "floppafamily";
+        
+        // ==================== LOGIN SYSTEM ====================
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // ==================== DOMContentLoaded ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, starting app...');
+            
+            const userDisplayName = localStorage.getItem('userDisplayName') || 'User';
+            const displayElement = document.getElementById('userDisplayName');
+            if (displayElement) {
+                displayElement.textContent = userDisplayName;
+            }
+            
+            initDarkMode();
+            setupVilogProtection();
+            
+            console.log('✅ App initialization completed');
+        });
+
+        // ==================== DARK MODE TOGGLE ====================
+        function initDarkMode() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (!themeToggle || !themeIcon) {
+                console.log('Theme toggle elements not found, retrying...');
+                setTimeout(initDarkMode, 100);
+                return;
+            }
+            
+            console.log('Theme toggle found, initializing...');
+            
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+                themeToggle.title = 'Switch to Light Mode';
+            } else {
+                document.body.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+                themeToggle.title = 'Switch to Dark Mode';
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                const isDark = document.body.classList.toggle('dark');
+                
+                if (isDark) {
+                    themeIcon.textContent = '☀️';
+                    themeToggle.title = 'Switch to Light Mode';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    themeIcon.textContent = '🌙';
+                    themeToggle.title = 'Switch to Dark Mode';
+                    localStorage.setItem('theme', 'light');
+                }
+                
+                console.log('Theme toggled to:', localStorage.getItem('theme'));
+            });
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userDisplayName');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('vilogUnlocked');
+            window.location.href = 'login.html';
+        }
+
+        // ==================== DATA VILOG ====================
+        const vilog = {
+            "bisaa": {
+                title: "Barudak Oregon",
+                content: `Street: 475 S Imperial Ave
+        City: Burns
+        State: Oregon
+        ZIP Code: 97720-2349`
+            },
+        };
+
+        // ==================== VILOG PIN PROTECTION ====================
+        function setupVilogProtection() {
+            console.log("🛡️ Setting up vilog protection...");
+            
+            const vilogContainer = document.getElementById('vilog-container');
+            const pinProtection = document.getElementById('vilog-pin-protection');
+            
+            if (!vilogContainer || !pinProtection) {
+                console.error("❌ Vilog elements not found!");
+                return;
+            }
+            
+            localStorage.removeItem('vilogUnlocked');
+            console.log("🔄 Vilog status reset on page load");
+            
+            pinProtection.style.display = 'block';
+            vilogContainer.style.display = 'none';
+            
+            const toggleBtn = document.getElementById('toggleVilogPin');
+            const pinInput = document.getElementById('vilog-pin');
+            
+            if (toggleBtn && pinInput) {
+                toggleBtn.addEventListener('click', function() {
+                    if (pinInput.type === 'password') {
+                        pinInput.type = 'text';
+                        this.innerHTML = '<span class="toggle-icon">🙈</span>';
+                    } else {
+                        pinInput.type = 'password';
+                        this.innerHTML = '<span class="toggle-icon">👁️</span>';
+                    }
+                    pinInput.focus();
+                });
+                
+                pinInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkVilogPin();
+                    }
+                });
+                
+                pinInput.focus();
+            }
+        }
+
+        function checkVilogPin() {
+            console.log("🔐 Checking PIN...");
+            
+            const pinInput = document.getElementById('vilog-pin');
+            const errorDiv = document.getElementById('pin-error');
+            const vilogContainer = document.getElementById('vilog-container');
+            const pinProtection = document.getElementById('vilog-pin-protection');
+            
+            if (!pinInput || !errorDiv || !vilogContainer || !pinProtection) {
+                console.error("❌ Elements not found!");
+                return;
+            }
+            
+            const enteredPin = pinInput.value;
+            console.log("📝 Entered PIN:", enteredPin);
+            
+            if (!enteredPin) {
+                errorDiv.textContent = "❌ Masukkan PIN terlebih dahulu!";
+                errorDiv.style.display = 'block';
+                pinInput.focus();
+                return;
+            }
+            
+            if (enteredPin === VILOG_PIN) {
+                console.log("✅ PIN CORRECT! Unlocking vilog...");
+                localStorage.setItem('vilogUnlocked', 'true');
+                pinProtection.style.display = 'none';
+                vilogContainer.style.display = 'block';
+                loadVilog();
+                showToast("✅ PIN benar! Vilog berhasil dibuka.");
+            } else {
+                console.log("❌ PIN WRONG! Showing error...");
+                errorDiv.textContent = "❌ PIN salah! Coba lagi.";
+                errorDiv.style.display = 'block';
+                pinInput.value = '';
+                pinInput.focus();
+                
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // ==================== FUNGSI LOAD VILOG ====================
+        function loadVilog() {
+            const container = document.getElementById('vilog-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (const [key, form] of Object.entries(vilog)) {
+                const formCard = document.createElement('div');
+                formCard.className = 'template-card';
+                
+                formCard.innerHTML = `
+                    <h3>${form.title}</h3>
+                    <div class="template-content" id="vilog-${key}">${form.content}</div>
+                    <button class="btn btn-copy" data-target="vilog-${key}">Salin</button>
+                `;
+                
+                container.appendChild(formCard);
+            }
+            
+            // Setup copy buttons
+            setupCopyButtons();
+            
+            // Setup search for vilog
+            const vilogSearch = document.getElementById('vilog-search');
+            if (vilogSearch) {
+                vilogSearch.addEventListener('input', filterVilog);
+            }
+        }
+
+        // Fungsi search untuk vilog
+        function filterVilog() {
+            const searchTerm = document.getElementById('vilog-search').value.toLowerCase();
+            const vilogCards = document.querySelectorAll('#vilog-container .template-card');
+            
+            vilogCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const content = card.querySelector('.template-content').textContent.toLowerCase();
+                const isVisible = title.includes(searchTerm) || content.includes(searchTerm);
+                card.style.display = isVisible ? 'block' : 'none';
+            });
+        }
+
+        // ==================== COPY FUNCTION ====================
+        function setupCopyButtons() {
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-copy')) {
+                    const targetId = e.target.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        const templateContent = targetElement.textContent;
+                        
+                        navigator.clipboard.writeText(templateContent).then(() => {
+                            const originalText = e.target.textContent;
+                            e.target.textContent = '✓ Disalin!';
+                            e.target.style.background = 'var(--success)';
+                            
+                            setTimeout(() => {
+                                e.target.textContent = originalText;
+                                e.target.style.background = '';
+                            }, 2000);
+                        });
+                    }
+                }
+            });
+        }
+
+        // ==================== TOAST FUNCTION ====================
+        function showToast(message, type = 'success') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            
+            // Add type-based styling
+            if (type === 'error') {
+                toast.style.background = 'var(--danger)';
+            } else if (type === 'warning') {
+                toast.style.background = 'var(--warning)';
+            }
+            
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove toast after animation
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        console.log('✅ All JavaScript functions loaded successfully');
+    </script>
+</body>
+</html>
