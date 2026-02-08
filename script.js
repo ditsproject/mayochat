@@ -8,6 +8,22 @@ const templatesData = [
 pilih robux via login, bakal muncul list harga robux, pilih dan klik nominal yang mau kamu beli, bakal ada qr otomatis, qr nya bisa all payment yahh, di scan aja, setelah bayar kirim kelengkapan login akun kamu: usn, pw dan kode backup . lalu akan mimin proses sesuai antrian ^,^`
     },
     {
+        id: 32,
+        name: "Bc Simple",
+        category: "keamanan",
+        content: `Cara Buat Backup Code:
+1. Buka aplikasi Roblox di HP kamu.
+2. Login ke akun → tekan ikon tiga titik (≡ / More) di pojok kanan bawah.
+3. Scroll ke bawah → pilih Settings (Pengaturan).
+4. Masuk ke menu Security (Keamanan).
+5. Aktifkan dulu 2-Step Verification (2SV) pakai email atau authenticator.
+6. Setelah aktif, akan muncul pilihan Generate Backup Codes (Buat Kode Cadangan).
+7. Tekan itu → kode cadangan akan muncul.
+8. Simpan kode tersebut (catat, screenshot, atau copy ke password manager).
+
+⚠️ Penting: kode cadangan cuma bisa ditampilkan sekali saat dibuat. Jadi jangan sampai lupa ss ya.`
+    },
+    {
         id: 14,
         name: "Terima Kasih",
         category: "other",
@@ -61,22 +77,7 @@ jadi ditunggu dulu aja yaa kak sampe waktu qr di atas abis ^.^`
         category: "problem",
         content: `oke kak udah aku data ulang, wet yahh nanti di kabarin lagihh`
     },
-    {
-        id: 32,
-        name: "Bc Simple",
-        category: "keamanan",
-        content: `Cara Buat Backup Code:
-1. Buka aplikasi Roblox di HP kamu.
-2. Login ke akun → tekan ikon tiga titik (≡ / More) di pojok kanan bawah.
-3. Scroll ke bawah → pilih Settings (Pengaturan).
-4. Masuk ke menu Security (Keamanan).
-5. Aktifkan dulu 2-Step Verification (2SV) pakai email atau authenticator.
-6. Setelah aktif, akan muncul pilihan Generate Backup Codes (Buat Kode Cadangan).
-7. Tekan itu → kode cadangan akan muncul.
-8. Simpan kode tersebut (catat, screenshot, atau copy ke password manager).
-
-⚠️ Penting: kode cadangan cuma bisa ditampilkan sekali saat dibuat. Jadi jangan sampai lupa ss ya.`
-    },
+    
     {
         id: 6,
         name: "PW Salah",
@@ -1216,7 +1217,8 @@ function generateBackupFormat() {
         finalCodes.push(backupCodes[backupCodes.length - 1]);
     }
     
-    const formattedOutput = `🔍 WAJIB DIISI 5 CODE BACKUP!!\n${finalCodes.map((code, i) => `- code back up ${i + 1}:${code}`).join('\n')}`;
+    // MODIFIKASI DI SINI: Tambahkan backtick di sekitar setiap kode
+    const formattedOutput = `🔍 WAJIB DIISI 5 CODE BACKUP!!\n${finalCodes.map((code, i) => `- code back up ${i + 1}: \`${code}\``).join('\n')}`;
     
     outputElement.textContent = formattedOutput;
     
