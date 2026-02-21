@@ -427,41 +427,55 @@ STEP BY STEP:
         id: 23,
         name: "Error Generate Backup Code",
         category: "problem",
-        content: `Error generate backup code? Biasanya karena:
+        content: `❌ ERROR SAAT GENERATE BACKUP CODE?
 
-PENYEBAB ERROR:
-1. Klik "Generate" berkali-kali jadi kena limit
-2. Email belum diverifikasi → harus verify dulu
-3. 2-Step belum aktif → harus aktifkan dulu
+Biasanya karena ini:
 
-SOLUSI STEP-BY-STEP:
+🔎 PENYEBAB ERROR
 
-KASUS 1: "Too many attempts"
+1. Klik Generate berkali-kali sampai kena limit
+2. Email belum diverifikasi
+3. Verifikasi 2 Langkah (2-Step) belum aktif
+
+✅ SOLUSI SESUAI ERROR
+
+KASUS 1: “Too many attempts”
+
+Artinya kamu kebanyakan klik.
 Solusi:
-1. TUNGGU 10-15 MENIT
-2. Jangan klik apa-apa
-3. Setelah 15 menit, coba lagi
 
-KASUS 2: "Email not verified"
+1. Tunggu 10–15 menit
+2. Jangan klik apa-apa dulu
+3. Setelah itu baru coba lagi (klik 1x aja)
+
+KASUS 2: “Email not verified”
+
+Artinya email belum diverifikasi.
 Solusi:
+
 1. Settings → Account Info
-2. Klik "Verify Email"
-3. Cek email → klik link verifikasi
-4. Setelah verified, coba generate
+2. Klik Verify Email
+3. Buka email → klik link verifikasi
+4. Setelah status jadi Verified, baru generate lagi
 
-KASUS 3: "2-Step not enabled"
+KASUS 3: “2-Step not enabled”
+
+Artinya 2-Step Verif belum aktif.
 Solusi:
+
 1. Settings → Security
-2. Aktifkan 2-Step dulu
-3. Pilih email verification
-4. Setelah aktif, baru generate
+2. Aktifkan 2-Step Verification
+3. Pilih verifikasi via Email
+4. Setelah aktif, baru generate backup code
 
-TIPS MENCEGAH ERROR:
-• Klik generate 1x saja → tunggu sampai popup muncul (kalo kebanyakan klik bakal "too many attempts" dan error)
-• Pastikan email verified sebelum generate
-• Gunakan browser Chrome/Safari
+⚠️ TIPS BIAR GAK ERROR
 
-Masih error? Screenshoot errornya, kirim ke mimin!`
+• Klik Generate cukup 1x, lalu tunggu popup muncul
+• Pastikan email sudah Verified
+• Gunakan Chrome atau Safari
+
+Masih error juga?
+Screenshot errornya, kirim ke mimin biar dicek.`
     },
 
    
@@ -1319,6 +1333,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
