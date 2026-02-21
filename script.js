@@ -106,110 +106,62 @@ Password baru:`
         id: 4,
         name: "Cara Buat Kode Backup",
         category: "problem",
-        content: `📌 CARA BUAT KODE BACKUP LENGKAP
+        content: `📌 CARA BUAT KODE BACKUP (WAJIB BACA)
 
-⚠️ WAJIB BACA SAMPAI SELESAI YA KAK! ⚠️
+⚠️ Email akun HARUS sudah terverifikasi.
+Kalau belum, gak bisa bikin kode backup.
 
-Untuk membuat Kode Backup, EMAIL AKUN HARUS SUDAH DIVERIFIKASI
-Kalau email belum diverifikasi, TIDAK BISA membuat kode backup.
+⚠️ Tombol “Verifikasi” atau “Buat” cukup klik SATU KALI.
+Kalau spam klik, bakal muncul error “Terlalu Banyak Percobaan”.
 
-⚠️ IKUTIN BIAR GA EROR:
-• Tombol “Verifikasi, Buat” hanya boleh diklik SATU KALI
-• Kalau diklik berkali-kali akan muncul error “Terlalu Banyak Percobaan”
+📧 CEK EMAIL SUDAH VERIFIED ATAU BELUM
 
-──────────────────
-📧 CEK STATUS VERIFIKASI EMAIL
-Cara cek email sudah diverifikasi atau belum:
+1. Buka Roblox → ikon tiga garis (≡) → Pengaturan → Info Akun
+2. Cek bagian Email
 
-1. Buka Roblox, Klik ikon tiga garis (≡) → Pengaturan → Info akun
-2. Lihat bagian Email
+✅ Kalau tertulis Terverifikasi → lanjut bikin kode backup
+❌ Kalau Tidak ada / Pending → verifikasi email dulu
 
-✅ Tertulis “Terverifikasi”
-→ Email sudah terverifikasi ✅
-→ LANJUT KE CARA BUAT KODE BACKUP
+📩 CARA VERIFIKASI EMAIL (kalau belum verified)
 
-❌ Tertulis “Tidak ada / Pending”
-→ Email belum diverifikasi ❌
-→ WAJIB VERIFIKASI EMAIL DULU
+1. Masuk ke Info Akun
+2. Tambahkan email aktif kamu (kalau belum ada)
+3. Kalau statusnya “Pending”, klik Verifikasi Email
+4. Buka email kamu → cari email dari Roblox
+5. Klik Verifikasi Email
+6. Balik ke Roblox, pastikan status jadi Terverifikasi
 
-──────────────────
-📩 CARA VERIFIKASI EMAIL
-(Lewati bagian ini jika email sudah “Terverifikasi” dan lanjut ke cara buat kode backup)
+Kalau sudah verified, lanjut buat kode backup.
 
-Siapkan email, Pastikan kamu punya email yang aktif dan bisa dibuka
-1. Buka Roblox, Klik ikon tiga garis (≡) → Pengaturan → Info Akun
-2. Lihat bagian Email
-
-LANGKAH 1: TAMBAHKAN EMAIL KE AKUN  (Jika statusnya Tidak Ada)
-
-1. Masih di halaman "Info Akun"
-2. Tekan tombol "Tambahkan Email"
-3. Masukkan alamat email kamu yang AKTIF 
-4. Klik "Tambahkan" → Akan muncul notifikasi "Email berhasil ditambahkan"
-➡️ Setelah ini, status email akan berubah menjadi “Pending”
-
-LANGKAH 2: VERIFIKASI EMAIL (Jika Statusnya Pending)
-Setelah email ditambahkan:
-
-1.  Masih di halaman "Info Akun", tekan "Verifikasi Email"
-2. Buka aplikasi email kamu
-3. Cari email dari Roblox dengan judul: "Verifikasi Email Roblox "
-4. Buka emailnya → Klik tombol "Verifikasi Email"
-5. Tunggu hingga terbuka halaman Roblox dengan tulisan:
-✅ "Email Anda telah diverifikasi"
-6. Kembali ke aplikasi Roblox → Info Akun
-Pastikan status email menjadi ✅ “Terverifikasi”
-Kalau sudah, lanjut ke buat kode backup
-
-──────────────────
 🎏 CARA BUAT KODE BACKUP
 
-🔐 LANGKAH 1: AKTIFKAN VERIFIKASI 2 LANGKAH
+🔐 1. Aktifkan Verifikasi 2 Langkah
 
-1. Buka Roblox, Klik ikon tiga garis (≡) → Pengaturan → Keamanan
-2. Scroll ke bagian "Verifikasi 2 Langkah"
-3. Pilih opsi "Email (aman)" → Tekan 
-⚠️ TEKAN SATU KALI SAJA
-4. Tunggu ± 5–10 detik sampai popup verifikasinya muncul
-5. Buka email kamu → Cari email dari Roblox dengan judul:
-"Kode Verifikasi 2 Langkah Anda"
-6. Salin kode 6 digit dari email tersebut
-7. Kembali ke aplikasi Roblox → Masukkan kode 6 digit tadi
-8. Klik "Verifikasi" 
+1. Ke Pengaturan → Keamanan
+2. Aktifkan Verifikasi 2 Langkah via Email
+3. Buka email → ambil kode 6 digit
+4. Masukkan kodenya → Verifikasi
 
-🧩 LANGKAH 2: BUAT KODE BACKUP
-Setelah verifikasi 2 langkah aktif:
+⚠️ Klik sekali aja, jangan spam.
 
-1. Masih di menu Keamanan, scroll ke bawah ke "Kode Pemulihan"
-2. Tekan tombol "Buat"
-⚠️TEKAN SATU KALI SAJA
-Tunggu ± 5–10 detik sampai popup verifikasinya muncul
-4. Masukin kode verifikasi email, Klik "Verifikasi" 
-4. Tunggu 5–10 detik → Akan muncul 10 kode backup
-5. SALIN 5 KODE PERTAMA (kode 1 sampai 5)
-6. Kirim 5 kode itu ke mimin
-7. Screenshot dan Simpan 5 kode lainnya untuk kamu simpan sendiri
+🧩 2. Buat Kode Backup
 
-──────────────────
-❌ JIKA MASIH ERROR / GAGAL
+1. Masih di menu Keamanan
+2. Scroll ke Kode Pemulihan
+3. Klik Buat (SATU KALI AJA)
+4. Masukkan kode verifikasi email
+5. Nanti muncul 10 kode backup
 
-Kalau masih belum bisa:
+📌 Kirim 5 kode pertama ke mimin
+📌 5 kode sisanya simpan buat kamu
 
-Cek ulang:
-• Pastikan Email sudah “Terverifikasi”
+❌ KALAU ERROR
 
-Logout Roblox → Login ulang → Coba lagi
+• Jangan spam klik tombol
+• Pastikan email sudah Terverifikasi
+• Kalau muncul “Terlalu Banyak Percobaan”, tunggu 10–15 menit
 
-Kalau muncul “Terlalu Banyak Percobaan”:
-• Tunggu 10–15 menit
-• Jangan klik tombol berkali-kali
-
-Kalau tetap error:
-• Screenshot error
-• Kirim ke mimin untuk dibantu
-
-✅ SUDAH BERHASIL?
-📩 Kirim 5 kode cadangan pertamanya ke mimin ya! 🎉`
+Kalau masih error, screenshot dan kirim ke mimin.`
     },
     {
         id: 9,
@@ -1352,6 +1304,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
