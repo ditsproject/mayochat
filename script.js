@@ -4,12 +4,12 @@ const templatesData = [
         id: 1,
         name: "Cara Order Simple",
         category: "order",
-        content: `aloo kak, gas order klik menunya.
+        content: `aloo kakk, gas order di klik menunya
 
 pilih robux via Login, nanti bakal muncul list harga robux, pilih nominal yang mau kamu beli lalu klik
 
-setelah itu otomatis muncul QR pembayaran,
-QR nya bisa untuk semua metode pembayaran, tinggal scan aja.
+setelah itu otomatis muncul QR pembayaran
+QR nya bisa untuk semua metode pembayaran, tinggal scan aja
 
 kalo sudah bayar, kirim data login akun kamu: usn, pw dan kode backup,
 
@@ -1341,6 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
