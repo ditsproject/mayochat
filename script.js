@@ -356,26 +356,41 @@ Kirim ulang usn dan password baru kamu`
         name: "Order Gamepass",
         category: "order",
         content: `
-order via gamepass ke web yahh
+📌 CARA ORDER ROBUX VIA GAMEPASS (WEB)
 
-buka mayoblox.com/robux (bukanya di chrome/safari biar gak error)
-pilih "Robux Gamepass PO"
-isi username kamu dan masukin nominal robux yang mau kamu beli, nanti bakalah ada harga di sebelah kanan
-masukin no wa kamu (jangan asal yah)
+Order lewat web ya.
+Buka: mayoblox.com/robux
+Pakai Chrome atau Safari biar gak error.
 
-list harga robux gamepass gaada yaa kak, harga hanya akan muncul kalo kamu udah masukin nominal robuxnya
-harga akan menyesuaikan nominal robux, jadi di sesuaikan aja kamu maunya beli berapa
+1. Pilih “Robux Gamepass PO”
+2. Masukkan username Roblox kamu
+3. Isi nominal Robux yang mau dibeli
+→ Harga otomatis muncul di sebelah kanan (harga ngikut nominal yang kamu masukin)
+4. Masukkan nomor WhatsApp yang aktif (jangan asal)
 
-habis itu pilih metode payment, klik beli sekarang
+📌 Harga baru muncul setelah kamu isi nominal Robux.
 
-tonton tutorial sampe selesai biar gak bingung dan gak salah.
-setelah tonton tutorial sampe selesai klik lanjutkan
+💳 Lanjut Pembayaran
 
-lalu set harga gamepass sesuai ketentuan web (ini bakal muncul kalo kamu udah tonton vidio tutorialnya sampe selesai)
-kalo udah buat gamepass , klik bayar , kamu bayar , selesai tinggal tunggu robux masuk sesuai estimasi
+5. Pilih metode pembayaran
+6. Klik Beli Sekarang
 
-kalo lewat dari estimasi robuxnya belum pending atau belum masuk , kamu chat ke cs yah @mayobloxcs di data dan di proses.
-`
+🎥 Tonton tutorial sampai selesai biar gak salah langkah.
+Setelah selesai nonton, klik Lanjutkan.
+
+🎮 Buat Gamepass
+
+7. Atur harga gamepass sesuai ketentuan di web
+(Opsi ini muncul setelah kamu selesai nonton tutorial)
+8. Kalau gamepass sudah dibuat, klik Bayar
+9. Selesaikan pembayaran
+
+Setelah itu tinggal tunggu Robux masuk sesuai estimasi.
+
+⏳ Kalau Bobux Belum Masuk
+
+Kalau sudah lewat estimasi dan Robux belum pending / belum masuk atau ada kendala lain:
+Chat ke CS @mayobloxcs`
     },
     {
         id: 17,
@@ -1304,6 +1319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
