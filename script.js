@@ -213,10 +213,21 @@ Kalau tetap error:
     },
     {
         id: 9,
-        name: "Estimasi",
-        category: "status",
-        content: `estimasi normal via login 15-30 menit , kalo antrian lagi panjang paling lama 3 jam
-kalo belum lewat dari estimasi ditunggu aja ya kakakk , mimin proses secepatnya`
+        name: "Bikin BC GK",
+        category: "order",
+        content: `Buat masuk ke akun kamu, admin butuh kode backup untuk verifikasi login.
+Jadi kamu harus bikin kode backup dulu, baru admin bisa proses akun kamu.
+
+Kenapa harus pake kode backup?
+Karena lebih simpel dan cepet.
+Kamu gak perlu standby chat, dan admin juga gak perlu nunggu kode email atau approve login dari kamu.
+Jadinya orderan kamu dan orderan yang lain bisa lebih cepet selesai.
+
+Sekali bikin kode backup, kamu bakal dapet 10 kode.
+1 kode cuma bisa dipake buat 1 kali login.
+Jadi total 10 kode bisa dipake buat 10 kali order tanpa harus bikin kode baru lagi.
+
+Kalau semua kode udah kepake atau gak valid, kamu harus generate kode backup yang baru dan kirim kode barunya ke admin.`
     },
     {
         id: 29,
@@ -1341,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
