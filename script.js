@@ -6,14 +6,12 @@ const templatesData = [
         category: "order",
         content: `aloo kakk, gas order di klik menunya
 
-pilih robux via Login, nanti bakal muncul list harga robux, pilih nominal yang mau kamu beli lalu klik
+pilih robux via Login, nanti muncul list harga robux, pilih nominal yang mau kamu beli lalu klik
 
-setelah itu otomatis muncul QR pembayaran
-QR nya bisa untuk semua metode pembayaran, tinggal scan aja
+nanti otomatis muncul qr pembayaran
+qr nya bisa untuk semua metode pembayaran, tinggal scan aja
 
-kalo sudah bayar, kirim data login akun kamu: usn, pw dan kode backup,
-
-lalu mimin proses sesuai antrian ^,^`
+kalo sudah bayar, kirim data login akun kamu lalu mimin proses sesuai antrian ^,^`
     },
     {
         id: 32,
@@ -43,7 +41,14 @@ ditunggu orderan berikutnya ^_^`
         id: 99,
         name: "Klik List",
         category: "other",
-        content: `aloo kak gass di klik nominal yang mau di beli nanti muncul qr otomatis, qr nya bisa all payment yahh, setelah bayar kirim kelengkapan login akun kamu lalu akan mimin proses sesuai antrian ^.^`
+        content: `aloo kakk, gas order di klik menunya
+
+pilih robux via Login, nanti muncul list harga robux, pilih nominal yang mau kamu beli lalu klik
+
+nanti otomatis muncul qr pembayaran
+qr nya bisa untuk semua metode pembayaran, tinggal scan aja
+
+kalo sudah bayar, kirim data login akun kamu lalu mimin proses sesuai antrian ^,^`
     },
     {
         id: 15,
@@ -1379,6 +1384,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
