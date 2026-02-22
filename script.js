@@ -222,23 +222,26 @@ Kalo masih bingung bisa tanya mimin lagi yaa kak`
         id: 3,
         name: "Cek Status Email",
         category: "problem",
-        content: `Cara cek status akun:
+        content: `📌 Cara Cek Status Akun
+1️⃣ Cek Status Email
 
-1. CEK STATUS EMAIL DULU:
-• Settings → Account Info
-• Lihat status email:
-  ✅ Verified = sudah diverifikasi
-  ❌ Not Verified = belum diverifikasi
+Masuk ke Settings → Account Info
+Lihat bagian Email:
 
-2. KALAU BELUM VERIFIED:
-• Klik "Verify Email"
-• Cek email dari Roblox
-• Klik link verifikasi di email
+✅ Verified = sudah diverifikasi
+❌ Not Verified = belum diverifikasi
 
-3. KALAU SUDAH VERIFIED TAPI MASIH ERROR:
+2️⃣ Kalau Belum Verified
+
+• Klik Verify Email
+• Buka email dari Roblox
+• Klik link verifikasi sampai status jadi Verified
+
+3️⃣ Kalau Sudah Verified Tapi Masih Error
+
 • Logout dari Roblox
 • Login lagi
-• Tunggu beberapa saat, coba lagi`
+• Tunggu sebentar lalu coba ulang`
     },
     {
         id: 5,
@@ -449,17 +452,22 @@ Pastikan datanya valid dan lengkap biar orderan kamu langsung di diproses tanpa 
         id: 22,
         name: "Regenerate Kode Baru",
         category: "security",
-        content: `Harus pake kode backup yang baru ya kakaa
-Caranya sama aja kaya pas awal buat,
+        content: `📌 Harus Generate Kode Backup Baru Yaa Kak
+
+Caranya sama kayak waktu pertama bikin.
 
 STEP BY STEP:
+
 1. Buka aplikasi Roblox
-2. Login → ikon tiga titik (≡) → Settings
-3. Pilih Security → Scroll Kebawah
-5. KLIK "Buat / Generate" (kliknya sekali aja, tunggu sampe popup muncul biar ga eror)
-6. Masukin kode dari email
-6. Tunggu kode muncul (5-10 detik) ss kodenya buat kamu simpan biar ga lupa
-7. Salin 5 kode → kirim ke mimin (jangan di ss!)`
+2. Login → tekan ikon tiga garis (≡) → **Settings**
+3. Masuk ke **Security** → scroll ke bawah
+4. Klik **Buat / Generate** (klik 1x aja, tunggu sampai popup muncul biar gak error)
+5. Masukkan kode verifikasi dari email
+6. Tunggu 5–10 detik sampai 10 kode muncul
+7. Screenshot semua kodenya buat kamu simpan
+8. Salin 5 kode pertama → kirim ke mimin (jangan kirim screenshot)
+
+Ikutin pelan-pelan. Jangan spam klik biar gak kena limit.`
     },
     {
         id: 23,
@@ -1371,6 +1379,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
