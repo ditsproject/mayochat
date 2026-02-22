@@ -289,58 +289,67 @@ Masih bingung? Screenshoot, kirim ke mimin`
         id: 10,
         name: "Prem Explain",
         category: "status",
-        content: `Apa itu Roblox Premium?
-Roblox Premium itu langganan berdurasi 1 bulan yang kasih beberapa keuntungan ke akun Roblox kamu.
+        content: `📌 Apa Itu Roblox Premium?
 
-Benefit Roblox Premium:
+Roblox Premium itu langganan 1 bulan yang kasih keuntungan tambahan ke akun Roblox kamu.
 
-• Dapet Robux sesuai paket yang dibeli
-     • Premium 450 → dapet 450 Robux
-     • Premium 1000 → dapet 1000 Robux
-     • Premium 2200 → dapet 2200 Robux
-         ➜ Gak kurang, gak lebih
-     • Dapet bonus 10% Robux setiap top up, TAPI cuma kalau Premium sedang aktif
-     • Bisa trade item (fitur khusus Premium)
+🎁 Benefit Roblox Premium
 
-Masa aktif Premium:
+Dapet Robux sesuai paket yang dibeli:
 
-     • Aktif 1 bulan
-     • Tidak otomatis bayar tiap bulan
-     • Sekali beli, aktif 1 bulan, selesai
+• Premium 450 → dapet 450 Robux
+• Premium 1000 → dapet 1000 Robux
+• Premium 2200 → dapet 2200 Robux
+➜ Pas sesuai paket, gak kurang gak lebih
 
-Premium TIDAK bisa di-stack:
+• Dapet bonus 10% Robux setiap top up (selama Premium masih aktif)
+• Bisa trade item (fitur khusus akun Premium)
 
-     • Kalau Premium masih aktif, TIDAK bisa beli Premium lagi
-     • Beli premium lagi saat masih aktif → GA BISA dan durasi GA NAMBAH
-     • Ini aturan langsung dari Roblox
+⏳ Masa Aktif Premium
 
-Bonus 10% Robux itu kapan?
+• Aktif selama 1 bulan
+• Tidak otomatis perpanjang
+• Sekali beli → aktif 1 bulan → selesai
 
-     • Bonus 10% hanya berlaku kalau Premium SUDAH aktif
-     • Kalau top up sebelum Premium aktif → TIDAK dapet bonus
-     • Jadi urutannya: aktifin Premium dulu → baru top up → dapet bonus 10%
+🚫 Premium Tidak Bisa Di-Stack
 
-Kapan bisa beli Premium lagi?
+• Kalau Premium masih aktif, gak bisa beli Premium lagi
+• Beli lagi saat masih aktif → gak bisa & durasi gak nambah
+• Ini aturan langsung dari Roblox, bukan bisa diakalin
 
-     • Hanya setelah Premium habis
-     • Kalau sudah habis, bebas mau beli nominal berapa aja
-        Contoh:
-          • Bulan ini Premium 450
-          • Bulan depan setelah habis, mau ganti ke Premium 2200 → BISA
+💰 Kapan Dapet Bonus Robux 10% ?
 
-Pas Premium aktif, bisa ganti nominal?
+• Bonus 10% cuma berlaku kalau Premium sudah aktif
+• Kalau top up sebelum Premium aktif → gak dapet bonus
 
-     • GAK BISA
-     • Bulan ini Premium 450 (masih aktif) , Mau ganti ke Premium 2200 → GAK BISA
-     • Kalau Premium masih aktif, mutlak gak bisa diapa-apain
+Urutannya harus:
+Aktifin Premium dulu → baru top up → baru dapet bonus 10%
 
-Ringkasannya:
+🔄 Kapan Bisa Beli Premium Lagi?
 
-• Premium cuma 1 bulan
+Cuma setelah Premium sebelumnya habis
+
+Contoh:
+Bulan ini Premium 450
+Bulan depan setelah habis → mau beli Premium → bisa
+
+❌ Bisa Ganti Nominal Saat Masih Aktif?
+
+Gak bisa.
+
+Contoh:
+Sekarang lagi aktif Premium 450
+Mau upgrade ke 2200 sebelum habis → gak bisa
+
+Selama masih aktif, Premium gak bisa diubah.
+
+📌 Ringkasan
+
+• Premium aktif 1 bulan
 • Gak otomatis perpanjang
 • Gak bisa di-stack
-• Bonus 10% cuma pas Premium aktif
-• Beli Premium cuma bisa kalau Premium sebelumnya sudah habis`
+• Bonus 10% cuma saat Premium aktif
+• Beli lagi cuma setelah masa aktif habis`
     },
     {
         id: 11,
@@ -1342,6 +1351,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
