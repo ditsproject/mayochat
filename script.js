@@ -50,28 +50,29 @@ ditunggu orderan berikutnya ^_^`
         name: "Order Web",
         category: "order",
         content: `
-cara order di website:
-buka mayoblox.com/robux (bukanya di chrome / safari) biar gak error
-pilih "Robux via Login"
-pilih "Order Via Website"
-isi username , password , kode backup dan no wa
-ikuti tutorial di website
-pilih nominal → bayar via QR
+📌 Cara Order di Website
+Buka mayoblox.com/robux
+Pakai Chrome atau Safari biar gak error.
 
-website gabisa dibuka?
-pake Chrome/Safari
-loadingnya lama? tungguin aja`
+1. Pilih Robux via Login
+2. Klik Order via Website
+3. Isi: Usn, Pw, Kode Backup 
+Masukkan nomor WhatsApp yang aktif (jangan asal)
+4. Ikuti tutorial di website
+5. Pilih nominal → bayar via QR`
     },
     {
         id: 8,
         name: "Salah Klik QR",
         category: "status",
-        content: `salah klik / mau ganti nominal yaa kak
+        content: `❗️ Salah Klik / Mau Ganti Nominal?
 
-gabisa langsung ganti yaa kak , tunggu transaksi dibatalkan otomatis dulu
-baru bisa order lagi dengan nominal baru
+Kalau sudah klik harus tunggu sekitar 1 jam sampai transaksi batal otomatis baru bisa order lagi.
 
-jadi ditunggu dulu aja yaa kak sampe waktu qr di atas abis ^.^`
+Ordernya lewat website aja yaa kak biar ga nunggu.
+
+Buka mayoblox.com/robux di browser 
+Pilih "Robux via Login"`
     },
     {
         id: 20,
@@ -1341,6 +1342,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
