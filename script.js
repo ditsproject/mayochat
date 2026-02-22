@@ -244,22 +244,29 @@ Kalo masih bingung bisa tanya mimin lagi yaa kak`
         id: 5,
         name: "Kode Verif Gk Masuk",
         category: "problem",
-        content: `Email verifikasinya ga masuk? Coba ini:
+        content: ` ❗️ Email Verifikasi Gak Masuk?
 
-1. Klik resend code di roblox, buka email
-2. Cek pesan email, refresh
-3. Klik pesan dari roblox, masukin kode verifikasinya ke roblox
-4. Pastikan email yang kamu loginin itu email yang terdafdar di akun roblox kamu
+Coba ini dulu:
 
-Kalau masih ga masuk:
-1. Settings → Account Info
+1. Klik Resend Code di Roblox
+2. Buka email kamu → refresh inbox
+3. Cari email dari Roblox → masukin kode verifikasinya ke Roblox
+4. Pastikan email yang kamu buka itu memang email yang terdaftar di akun Roblox kamu
+
+❓ Masih Gak Masuk?
+
+1. Masuk ke Settings → Account Info
 2. Cek status email:
-  - Verified = sudah diverifikasi
-  - Not Verified = belum diverifikasi
-3. KALAU BELUM VERIFIED:
-  - Klik "Verify Email"
-  - Cek email dari Roblox
-  - Klik link verifikasi di email (ini wajib yah biar akunnya ke verif)`
+
+   Verified = sudah diverifikasi
+   Not Verified = belum diverifikasi
+
+Kalau masih Not Verified:
+• Klik Verify Email
+• Cek email dari Roblox
+• Klik link verifikasi di email (ini wajib supaya status jadi Verified)
+
+Ikutin stepnya pelan-pelan, jangan loncat-loncat. Biasanya gagal karena salah email atau gak dicek inbox nya.`
     },
     {
         id: 7,
@@ -1364,6 +1371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
