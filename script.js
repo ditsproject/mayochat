@@ -265,25 +265,35 @@ Kalau masih ga masuk:
         id: 7,
         name: "Ke Logout Abis Topup",
         category: "problem",
-        content: `Habisi top-up terus ke logout? aman kok itu cuma bug topup dari roblox aja
+        content: `
+❗️ Habis Top-Up Kok Ke-Logout?
 
-Cara login lagi:
+Aman. Itu cuma bug top-up dari Roblox aja, bukan akun kamu kenapa-kenapa.
+
+🔐 Cara Login Lagi
+
 1. Buka roblox.com/login
-2. Masuk pakai password YANG BARU KAMU KASIH
-3. Kalau minta kode → pakai email/backup code
+2. Login pakai password terbaru yang kamu kasih
+3. Kalau diminta kode verifikasi → pakai kode dari email atau backup code
 
-MIMIN TIDAK PERNAH:
+📌 Mimin TIDAK Pernah:
+
 • Ganti password kamu
 • Ganti email kamu
 
-Kalo masih gabisa, reset password aja:
-1. Buka roblox.com di browser di form login klik "Forgot Username or Password"
-2. Masukkan email/nomor yang terdaftar di akun kamu
-3. Cek pesan email → klik link reset
-4. Buat password baru
-5. Login pake password yang baru kamu buat
+🔄 Kalau Masih Gak Bisa Login
 
-Masih bingung? Screenshoot, kirim ke mimin`
+Reset password aja:
+
+1. Buka roblox.com → klik Forgot Username or Password
+2. Masukkan email / nomor yang terdaftar
+3. Cek email → klik link reset
+4. Buat password baru
+5. Login pakai password baru itu
+
+Masih bingung juga?
+Screenshot kendalanya, kirim ke mimin biar dicek.
+`
     },
     {
         id: 10,
@@ -421,9 +431,12 @@ cara order, cara buat gamepass, pertanyaan dan kendala, kaka bisa chat ke cs ya 
         id: 21,
         name: "Problem Web",
         category: "problem",
-        content: `itu data akun kamu ada yang salah jadinya gabisa di loginin dan gabisa di proses.
-kamu perbaikin dulu data login nya, kamu cek login sendiri udah bisa atau belum, kalo udah bisa baru kamu kirim data perbaikannya.
-pastiin data yang kamu kirim bener yah biar ga ada kendala lagi dan robux kamu bisa masuk`
+        content: `Data login kamu salah, jadi belum bisa diproses.
+
+Tolong perbaiki dulu dan coba login sendiri sampai benar-benar bisa masuk.
+Kalo udah bisa masuk, baru kirim ulang data yang benar.
+
+Pastikan datanya valid dan lengkap biar orderan kamu langsung di diproses tanpa kendala lagi.`
     },
     {
         id: 22,
@@ -1351,6 +1364,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
