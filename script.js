@@ -41,14 +41,14 @@ ditunggu orderan berikutnya ^_^`
         id: 99,
         name: "Klik List",
         category: "other",
-        content: `aloo kakk, gas order di klik menunya
+        content: `aloo kak, gasss di klik nominal yang mau dibeli,
+nanti otomatis muncul qr pembayaran.
 
-pilih robux via Login, nanti muncul list harga robux, pilih nominal yang mau kamu beli lalu klik
-
-nanti otomatis muncul qr pembayaran
 qr nya bisa untuk semua metode pembayaran, tinggal scan aja
 
-kalo sudah bayar, kirim data login akun kamu lalu mimin proses sesuai antrian ^,^`
+kalo sudah bayar, kirim data login akun kamu: usn, pw dan kode backup
+
+lalu mimin proses sesuai antrian ^,^`
     },
     {
         id: 15,
@@ -1384,6 +1384,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
