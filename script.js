@@ -34,7 +34,7 @@ kalo sudah bayar, kirim data login akun kamu lalu mimin proses sesuai antrian ^,
         name: "Gabisa",
         category: "other",
         content: `Untuk Robux via Login, tidak bisa beli sesuai budget ya kak.
-Gak bisa: 50k pas dapet berapa, 100k pas dapet berapa, dll.
+Gak bisa: 50k pas dapet berapa, 100 robux pas berapa, dll.
 
 Via login cuma bisa pilih nominal yang ada di pricelist.
 
@@ -1396,6 +1396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
