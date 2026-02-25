@@ -30,6 +30,18 @@ kalo sudah bayar, kirim data login akun kamu lalu mimin proses sesuai antrian ^,
 ⚠️ Penting: kode cadangan cuma bisa ditampilkan sekali saat dibuat. Jadi jangan sampai lupa ss ya.`
     },
     {
+        id: 52,
+        name: "Gabisa",
+        category: "other",
+        content: `Untuk Robux via Login, tidak bisa beli sesuai budget ya kak.
+Gak bisa: 50k pas dapet berapa, 100k pas dapet berapa, dll.
+
+Via login cuma bisa pilih nominal yang ada di pricelist.
+
+Kalau mau beli sesuai uang pas (misal 50k pas), itu lewat via Gamepass
+Tapi via Gamepass pending 5–8 hari.`
+    },
+    {
         id: 14,
         name: "Terima Kasih",
         category: "other",
@@ -1384,6 +1396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 
 });
+
 
 
 
