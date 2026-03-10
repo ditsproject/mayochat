@@ -1650,6 +1650,69 @@ function invCopyInvoice() {
     }
 }
 
+// ==================== ADDRESS MODAL ====================
+function addressModalOpen() {
+    // Reset ke key screen setiap kali buka
+    document.getElementById('addressKeyInput').value = '';
+    document.getElementById('addressKeyError').textContent = '';
+    document.getElementById('addressKeyScreen').style.display = 'block';
+    document.getElementById('addressContent').style.display = 'none';
+    document.getElementById('addressModalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('addressKeyInput').focus(), 100);
+}
+function addressModalClose() { document.getElementById('addressModalOverlay').classList.remove('open'); }
+function addressModalCloseOutside(e) {
+    if (e.target === document.getElementById('addressModalOverlay')) addressModalClose();
+}
+
+function addressToggleKey(btn) {
+    const input = document.getElementById('addressKeyInput');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.querySelector('.toggle-icon').textContent = isHidden ? '🙈' : '👁️';
+}
+
+function addressCheckKey() {
+    const val = document.getElementById('addressKeyInput').value.trim();
+    const errEl = document.getElementById('addressKeyError');
+    if (val === 'ambatukam') {
+        errEl.textContent = '';
+        document.getElementById('addressKeyScreen').style.display = 'none';
+        document.getElementById('addressContent').style.display = 'block';
+    } else {
+        errEl.textContent = '❌ Secret key salah, coba lagi!';
+        document.getElementById('addressKeyInput').value = '';
+        document.getElementById('addressKeyInput').focus();
+    }
+}
+
+function addressCopy(text, el) {
+    const doCopy = () => {
+        el.classList.add('copied');
+        el.querySelector('.addr-copy-icon').className = 'fas fa-check addr-copy-icon';
+        showToast('✅ "' + text + '" dicopy!');
+        setTimeout(() => {
+            el.classList.remove('copied');
+            el.querySelector('.addr-copy-icon').className = 'fas fa-copy addr-copy-icon';
+        }, 1500);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(doCopy).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            doCopy();
+        });
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        doCopy();
+    }
+}
+
 // ==================== MAIN INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Take Order Tele initialized! 🚀');

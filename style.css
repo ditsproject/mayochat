@@ -1803,3 +1803,61 @@ textarea.inv-form-control { resize: vertical; min-height: 100px; }
     display: flex; align-items: flex-start; gap: 0.3rem;
 }
 .inv-hint i { color: var(--pink); margin-top: 2px; }
+
+/* ==================== ADDRESS COPY BOX ==================== */
+.addr-copy-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--pink-light);
+    border-radius: 8px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.addr-copy-box:hover {
+    border-color: var(--pink);
+    background: var(--pink-light);
+    box-shadow: 0 0 0 3px rgba(249,180,199,0.2);
+}
+
+.addr-copy-box:active {
+    transform: scale(0.98);
+}
+
+.addr-copy-box span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.addr-copy-icon {
+    color: var(--muted);
+    font-size: 0.8rem;
+    transition: color 0.2s;
+}
+
+.addr-copy-box:hover .addr-copy-icon {
+    color: var(--pink-dark);
+}
+
+.addr-copy-box.copied {
+    border-color: var(--success);
+    background: rgba(16,185,129,0.08);
+}
+
+.addr-copy-box.copied .addr-copy-icon {
+    color: var(--success);
+}
+
+.addr-key-error {
+    font-size: 0.78rem;
+    color: var(--danger);
+    font-weight: 600;
+    margin-top: 0.4rem;
+    min-height: 1rem;
+}

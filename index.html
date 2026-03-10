@@ -17,7 +17,7 @@
     <div class="nav-container">
         <div class="nav-brand">
             <div class="logo">
-                <a href="login.html" class="logo-link" title="">
+                <a href="#" class="logo-link" title="Alamat Bill Gates" onclick="addressModalOpen(); return false;">
                     <i class="fas fa-shopping-cart"></i>
                 </a>
                 <h1>Take Order</h1>
@@ -451,6 +451,72 @@
     <button class="fab fab-home" id="scrollToTopFab" title="Home">
         <i class="fas fa-home"></i>
     </button>
+
+    <!-- ==================== ADDRESS MODAL ==================== -->
+    <div class="inv-modal-overlay" id="addressModalOverlay" onclick="addressModalCloseOutside(event)">
+        <div class="inv-modal-box">
+            <div class="inv-modal-header">
+                <h3><i class="fas fa-map-marker-alt"></i> Alamat Bill Gates</h3>
+                <button class="inv-modal-close" onclick="addressModalClose()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- KEY SCREEN -->
+            <div id="addressKeyScreen">
+                <div class="inv-form-group">
+                    <label>Secret Key</label>
+                    <div class="password-container">
+                        <input class="inv-form-control" id="addressKeyInput" type="password" placeholder="Masukkan secret key…" onkeydown="if(event.key==='Enter') addressCheckKey()">
+                        <button class="toggle-password" onclick="addressToggleKey(this)" type="button">
+                            <span class="toggle-icon">👁️</span>
+                        </button>
+                    </div>
+                    <div id="addressKeyError" class="addr-key-error"></div>
+                </div>
+                <button class="inv-btn inv-btn-pink" style="width:100%;justify-content:center;" onclick="addressCheckKey()">
+                    <i class="fas fa-unlock"></i> Unlock
+                </button>
+            </div>
+
+            <!-- ADDRESS CONTENT (hidden until key correct) -->
+            <div id="addressContent" style="display:none;">
+                <div class="addr-row">
+                    <div class="inv-form-group">
+                        <label>Street</label>
+                        <div class="addr-copy-box" onclick="addressCopy('475 S Imperial Ave', this)">
+                            <span>475 S Imperial Ave</span>
+                            <i class="fas fa-copy addr-copy-icon"></i>
+                        </div>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>City</label>
+                        <div class="addr-copy-box" onclick="addressCopy('Burns', this)">
+                            <span>Burns</span>
+                            <i class="fas fa-copy addr-copy-icon"></i>
+                        </div>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>State</label>
+                        <div class="addr-copy-box" onclick="addressCopy('Oregon', this)">
+                            <span>Oregon</span>
+                            <i class="fas fa-copy addr-copy-icon"></i>
+                        </div>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>ZIP Code</label>
+                        <div class="addr-copy-box" onclick="addressCopy('97720-2349', this)">
+                            <span>97720-2349</span>
+                            <i class="fas fa-copy addr-copy-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="inv-hint" style="margin-top:0.5rem;">
+                    <i class="fas fa-info-circle"></i> Klik field untuk copy ke clipboard
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- ==================== END ADDRESS MODAL ==================== -->
 
     <script src="script.js"></script>
     <script src="script-login.js"></script>
