@@ -103,7 +103,6 @@ Pilih "Robux via Login"`
         category: "problem",
         content: `oke kak udah aku data ulang, wet yahh nanti di kabarin lagihh`
     },
-    
     {
         id: 6,
         name: "PW Salah",
@@ -137,8 +136,8 @@ Password baru:`
 ⚠️ Email akun HARUS sudah terverifikasi.
 Kalau belum, gak bisa bikin kode backup.
 
-⚠️ Tombol “Verifikasi” atau “Buat” cukup klik SATU KALI.
-Kalau spam klik, bakal muncul error “Terlalu Banyak Percobaan”.
+⚠️ Tombol "Verifikasi" atau "Buat" cukup klik SATU KALI.
+Kalau spam klik, bakal muncul error "Terlalu Banyak Percobaan".
 
 📧 CEK EMAIL SUDAH VERIFIED ATAU BELUM
 
@@ -152,7 +151,7 @@ Kalau spam klik, bakal muncul error “Terlalu Banyak Percobaan”.
 
 1. Masuk ke Info Akun
 2. Tambahkan email aktif kamu (kalau belum ada)
-3. Kalau statusnya “Pending”, klik Verifikasi Email
+3. Kalau statusnya "Pending", klik Verifikasi Email
 4. Buka email kamu → cari email dari Roblox
 5. Klik Verifikasi Email
 6. Balik ke Roblox, pastikan status jadi Terverifikasi
@@ -185,7 +184,7 @@ Kalau sudah verified, lanjut buat kode backup.
 
 • Jangan spam klik tombol
 • Pastikan email sudah Terverifikasi
-• Kalau muncul “Terlalu Banyak Percobaan”, tunggu 10–15 menit
+• Kalau muncul "Terlalu Banyak Percobaan", tunggu 10–15 menit
 
 Kalau masih error, screenshot dan kirim ke mimin.`
     },
@@ -417,7 +416,7 @@ Order lewat web ya.
 Buka: mayoblox.com/robux
 Pakai Chrome atau Safari biar gak error.
 
-1. Pilih “Robux Gamepass PO”
+1. Pilih "Robux Gamepass PO"
 2. Masukkan username Roblox kamu
 3. Isi nominal Robux yang mau dibeli
 → Harga otomatis muncul di sebelah kanan (harga ngikut nominal yang kamu masukin)
@@ -502,7 +501,7 @@ Biasanya karena ini:
 
 ✅ SOLUSI SESUAI ERROR
 
-KASUS 1: “Too many attempts”
+KASUS 1: "Too many attempts"
 
 Artinya kamu kebanyakan klik.
 Solusi:
@@ -511,7 +510,7 @@ Solusi:
 2. Jangan klik apa-apa dulu
 3. Setelah itu baru coba lagi (klik 1x aja)
 
-KASUS 2: “Email not verified”
+KASUS 2: "Email not verified"
 
 Artinya email belum diverifikasi.
 Solusi:
@@ -521,7 +520,7 @@ Solusi:
 3. Buka email → klik link verifikasi
 4. Setelah status jadi Verified, baru generate lagi
 
-KASUS 3: “2-Step not enabled”
+KASUS 3: "2-Step not enabled"
 
 Artinya 2-Step Verif belum aktif.
 Solusi:
@@ -540,8 +539,6 @@ Solusi:
 Masih error juga?
 Screenshot errornya, kirim ke mimin biar dicek.`
     },
-
-   
 ];
 
 // ==================== STATE ====================
@@ -1147,29 +1144,27 @@ function initializeScrollButtons() {
     document.getElementById('scrollToResellerFab').addEventListener('click', function() {
         const resellerSection = document.querySelector('.reseller-section');
         if (resellerSection) {
-            resellerSection.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-            });
+            resellerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
     
     document.getElementById('scrollToTopFab').addEventListener('click', function() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         showToast('🏠 Kembali ke atas');
     });
     
     document.getElementById('scrollToBackupFab').addEventListener('click', function() {
         const backupSection = document.querySelector('.backup-formatter-section');
         if (backupSection) {
-            backupSection.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-            });
+            backupSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+
+    // NEW: scroll to invoice maker
+    document.getElementById('scrollToInvoiceFab').addEventListener('click', function() {
+        const invoiceSection = document.querySelector('.invoice-maker-section');
+        if (invoiceSection) {
+            invoiceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
     
@@ -1354,6 +1349,307 @@ function fallbackCopyTextBackup(text) {
     }
 }
 
+// ==================== INVOICE MAKER ====================
+
+// --- Modal ---
+function invOpenModal()  { document.getElementById('invModalOverlay').classList.add('open'); }
+function invCloseModal() { document.getElementById('invModalOverlay').classList.remove('open'); }
+function invCloseModalOutside(e) {
+    if (e.target === document.getElementById('invModalOverlay')) invCloseModal();
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') invCloseModal(); });
+
+// --- Extract backup codes (invoice ver.) ---
+function invExtractCodes(text) {
+    if (!text) return [];
+    const passVal = (document.getElementById('fPass') ? document.getElementById('fPass').value : '').trim().toLowerCase();
+    const userVal = (document.getElementById('fUser') ? document.getElementById('fUser').value : '').trim().toLowerCase();
+
+    const isValidCode = (tok) => {
+        const t = tok.replace(/`/g,'').toLowerCase().trim();
+        return t.length >= 7 && t.length <= 14 && /^[a-z0-9]+$/.test(t) &&
+               !(passVal && t === passVal) && !(userVal && t === userVal);
+    };
+
+    const labeled = [];
+
+    // Strategy 1a: per-baris bernomor "- code back up 1: xxx" atau "code back up 1:xxx"
+    // Ini HARUS jalan duluan sebelum inline scan, karena format ini paling akurat
+    const perLinePattern = /(?:code\s*back\s*up|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*`?([a-z0-9]{6,14})`?/gi;
+    let m;
+    while ((m = perLinePattern.exec(text)) !== null) {
+        const c = m[1].toLowerCase();
+        if (!(passVal && c === passVal) && !(userVal && c === userVal) && !labeled.includes(c)) {
+            labeled.push(c);
+            if (labeled.length >= 5) break;
+        }
+    }
+
+    // Strategy 1b: inline "3 backup kode: a, b, c" — HANYA jika belum dapat kode dari 1a
+    // dan HANYA jika ada angka sebelum "backup kode" (bukan kalimat panjang)
+    if (labeled.length < 3) {
+        const inlineMatch = text.match(/(?:\d+\s+)(?:backup\s*kode?|kode?\s*backup)\s*[:\-\u2013]\s*(.+)/i);
+        if (inlineMatch) {
+            const tokens = inlineMatch[1].split(/[\s,;]+/);
+            for (const tok of tokens) {
+                const t = tok.replace(/`/g,'').toLowerCase().trim();
+                if (isValidCode(t) && !labeled.includes(t)) {
+                    labeled.push(t);
+                    if (labeled.length >= 5) break;
+                }
+            }
+        }
+    }
+
+    if (labeled.length >= 5) return labeled.slice(0, 5);
+
+    // Strategy 2: scan semua token
+    // Roblox backup code di strategy 2 WAJIB ada digit (untuk filter kata biasa seperti "lengkap", "premium", dll)
+    // Labeled strategy (1a) tidak perlu syarat ini karena sudah dipastikan oleh konteks label
+    const wordBlacklist = /^(?:jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des|januari|februari|maret|april|juni|juli|agustus|september|oktober|november|desember|monday|tuesday|wednesday|thursday|friday|saturday|sunday|password|username|robux|roblox|backup|code|mimin|admin|store|vilog|topup|data|detail|pesanan|kamu|jumlah|nominal|order|lengkap|kelengkapan|premium|offline|pemulihan|harap|diisi|wajib|tuliskan|minimal|karena|sambil|dimainkan|pengisian|mengganggu)$/i;
+    // Strip label backup di AWAL baris saja (pakai ^ dengan multiline) agar tidak truncate kode di akhir baris sebelumnya
+    const cleanText = text
+        .replace(/^[^\n]*(?:backup\s*kode?|kode?\s*backup|code\s*back\s*up|backup\s*code)[^\n]*/gim, '');
+    const mixed = [];
+    for (const seg of cleanText.split(/[\n\r,;|]+/)) {
+        for (const tok of seg.replace(/[-•·`]/g, ' ').split(/\s+/)) {
+            const t = tok.replace(/`/g,'').toLowerCase().trim();
+            // Di strategy 2: WAJIB ada digit DAN huruf (filter kata murni seperti "lengkap", "premium")
+            // Plus wajib diawali huruf atau angka (bukan simbol)
+            if (t.length >= 7 && t.length <= 14 && /^[a-z0-9]+$/.test(t) &&
+                /[0-9]/.test(t) && /[a-z]/.test(t) &&
+                !/robux|roblox|premium|prem|rbx|backup|kode|code/i.test(t) &&
+                !(passVal && t === passVal) && !(userVal && t === userVal) &&
+                !wordBlacklist.test(t) && !labeled.includes(t) && !mixed.includes(t)) {
+                mixed.push(t);
+                if (mixed.length >= 5) break;
+            }
+        }
+        if (mixed.length >= 5) break;
+    }
+    return [...labeled, ...mixed].slice(0, 5);
+}
+
+// --- Format robux ---
+function invFormatRobux(raw) {
+    if (!raw) return '';
+    const PRICELIST = [80,160,240,320,500,1000,1080,1160,1240,1320,1500,2000,2500,
+                       3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000,8500,
+                       9000,9500,10000,450,2200];
+    const s = raw.trim();
+    const isPrem = /prem(?:ium)?/i.test(s);
+    const normalized = s.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+    const nums = (normalized.match(/\d+/g) || []).map(Number);
+    if (!nums.length) return raw;
+    for (const n of nums) {
+        if (PRICELIST.includes(n)) return isPrem ? n + 'R + Premium' : n + ' Robux';
+    }
+    const robuxNums = nums.filter(n => n >= 1 && n <= 10000);
+    if (robuxNums.length) {
+        const best = robuxNums.reduce((a, b) =>
+            Math.min(...PRICELIST.map(p => Math.abs(a-p))) <= Math.min(...PRICELIST.map(p => Math.abs(b-p))) ? a : b);
+        return isPrem ? best + 'R + Premium' : best + ' Robux';
+    }
+    return isPrem ? Math.max(...nums) + 'R + Premium' : Math.max(...nums) + ' Robux';
+}
+
+// --- Codes indicator (for modal textarea) ---
+function invCheckCodes() {
+    const codes = invExtractCodes(document.getElementById('fCodes').value);
+    const found = document.getElementById('invCodesFound');
+    const none  = document.getElementById('invCodesNone');
+    if (codes.length > 0) {
+        found.textContent = '✅ ' + codes.length + ' kode ditemukan';
+        found.classList.add('show'); none.classList.remove('show');
+    } else {
+        found.classList.remove('show'); none.classList.add('show');
+    }
+}
+
+// --- Update pills ---
+function invUpdatePills() {
+    const robux = document.getElementById('fRobux').value.trim();
+    const user  = document.getElementById('fUser').value.trim();
+    const pass  = document.getElementById('fPass').value.trim();
+    const codes = invExtractCodes(document.getElementById('fCodes').value);
+    const setPill = (id, valId, val, good) => {
+        document.getElementById(valId).textContent = val || '–';
+        document.getElementById(id).className = 'inv-pill ' + (good ? 'ok' : 'warn');
+    };
+    setPill('invPillRobux', 'invPillRobuxVal', robux ? invFormatRobux(robux) : '', !!robux);
+    setPill('invPillUser',  'invPillUserVal',  user,  !!user);
+    setPill('invPillPass',  'invPillPassVal',  pass ? '••••' : '', !!pass);
+    setPill('invPillCodes', 'invPillCodesVal', codes.length + ' kode', codes.length >= 5);
+    document.getElementById('invParsedPreview').classList.add('show');
+}
+
+// --- Auto parse + generate ---
+function invAutoParseAndGenerate() {
+    const rawInput = document.getElementById('invRawPaste').value;
+    if (!rawInput.trim()) { showToast('❌ Teks kosong, paste dulu chat customer!'); return; }
+
+    // Strip chat export timestamps: [3/10/2026 5:01 PM] Name:
+    const raw = rawInput.replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g, '');
+
+    // Username
+    const userMatch = raw.match(/(?<!\w)(?:username|usn|user\w*)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡]+)/i);
+    if (userMatch) document.getElementById('fUser').value = userMatch[1].trim();
+
+    // Password (allow emoji prefix, require colon)
+    const passMatch = raw.match(/(?:^|\n)[^\w\n]*(?:pw|pas\w*)\s*[:\-–]\s*([^\n\r]+)/im);
+    if (passMatch) document.getElementById('fPass').value = passMatch[1].trim();
+
+    // Robux — smart pricelist matching
+    const PRICELIST_VALS = [80,160,240,320,500,1000,1080,1160,1240,1320,1500,2000,2500,
+                            3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000,8500,
+                            9000,9500,10000,450,2200];
+
+    // Cari baris yang explicitly ngomongin robux/nominal — prioritas tinggi
+    // Pattern: "robux: 1000", "nominal: 500", "jumlah: 2000 robux", dll
+    // PENTING: harus cari baris yang HANYA berisi angka nominal, bukan baris backup kode
+    let robuxLine = null;
+
+    // Priority 1: baris dengan label nominal/order/jumlah/beli/robux diikuti angka langsung
+    const labelMatch = raw.match(/(?:^|\n)[^\n\r]*(?:robux|nominal|jumlah|order|beli)\s*[:\-–]\s*(\d[\d.,]*(?:\s*(?:robux|r|rb))?(?:\s*\+?\s*prem(?:ium)?)?)[^\n\r]*/im);
+    if (labelMatch) {
+        robuxLine = labelMatch[0].trim();
+    }
+
+    // Priority 2: baris dengan keyword robux/prem tapi bukan baris backup kode
+    if (!robuxLine) {
+        const lines = raw.split(/\n/);
+        for (const ln of lines) {
+            const l = ln.trim().toLowerCase();
+            // Skip baris yang kemungkinan besar adalah backup kode (ada kata "backup", "code", "kode", atau isinya campuran kode)
+            if (/backup|code\s*back|kode\s*backup|kode\s*pemulihan/i.test(l)) continue;
+            if (/\d\s+backup|backup\s*kode/i.test(l)) continue;
+            if (/(?:robux|robuk|prem(?:ium)?)/.test(l)) {
+                robuxLine = ln.trim();
+                break;
+            }
+        }
+    }
+
+    if (robuxLine) {
+        const isPrem = /prem(?:ium)?/i.test(robuxLine);
+        const normalized = robuxLine.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+        const allNums = (normalized.match(/\d+/g) || []).map(Number);
+        // Filter angka yang masuk akal sebagai nominal robux (1 - 99999)
+        // dan bukan angka kecil yang kemungkinan besar bukan nominal (misal angka "3" dari "3 backup kode")
+        const robuxCands = allNums.filter(n => n >= 80 && n <= 99999);
+        let found = null;
+        for (const n of robuxCands) { if (PRICELIST_VALS.includes(n)) { found = n; break; } }
+        if (!found && robuxCands.length) {
+            // Closest pricelist match
+            found = robuxCands.reduce((a, b) =>
+                Math.min(...PRICELIST_VALS.map(p => Math.abs(a-p))) <=
+                Math.min(...PRICELIST_VALS.map(p => Math.abs(b-p))) ? a : b);
+        }
+        if (found) document.getElementById('fRobux').value = isPrem ? found + 'R + Premium' : found + ' Robux';
+        else if (allNums.length) document.getElementById('fRobux').value = robuxLine.trim();
+    } else {
+        // Fallback: cari angka standalone yang match pricelist di seluruh teks
+        // (tapi skip baris backup kode)
+        const cleanRaw = raw.replace(/(?:^|\n)[^\n\r]*(?:backup|code\s*back|kode\s*backup)[^\n\r]*/gi, '');
+        const normalized = cleanRaw.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+        const allNums = (normalized.match(/\d+/g) || []).map(Number);
+        const isPrem = /prem(?:ium)?/i.test(cleanRaw);
+        for (const n of allNums) {
+            if (PRICELIST_VALS.includes(n)) {
+                document.getElementById('fRobux').value = isPrem ? n + 'R + Premium' : n + ' Robux';
+                break;
+            }
+        }
+    }
+
+    // Backup codes
+    document.getElementById('fCodes').value = raw;
+    invCheckCodes();
+    invUpdatePills();
+    invGenerateInvoice();
+}
+
+// --- Clear ---
+function invClearRaw() {
+    document.getElementById('invRawPaste').value = '';
+    document.getElementById('invParsedPreview').classList.remove('show');
+    document.getElementById('invOutputBox').textContent = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
+    invLastInvoiceText = '';
+    document.getElementById('invCopyStatus').classList.remove('show');
+    showToast('🧹 Cleared!');
+}
+
+// --- Auto paste ---
+async function invDoPaste() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) { showToast('❌ Clipboard kosong!'); return; }
+        document.getElementById('invRawPaste').value = text;
+        invAutoParseAndGenerate();
+        showToast('📋 Auto paste berhasil!');
+    } catch(e) {
+        showToast('❌ Gagal baca clipboard. Izinkan akses clipboard dulu.');
+    }
+}
+
+// --- Generate invoice ---
+let invLastInvoiceText = '';
+function invGenerateInvoice() {
+    const robuxRaw = document.getElementById('fRobux').value.trim();
+    const user     = document.getElementById('fUser').value.trim();
+    const pass     = document.getElementById('fPass').value.trim();
+    const codesRaw = document.getElementById('fCodes').value;
+
+    if (!robuxRaw && !user && !pass) {
+        showToast('❌ Isi minimal nominal, username, atau password dulu!');
+        return;
+    }
+
+    const robux = invFormatRobux(robuxRaw) || robuxRaw || '???';
+    const codes = invExtractCodes(codesRaw);
+    const codesPlain = [];
+    for (let i = 0; i < 5; i++) codesPlain.push(codes[i] || '???');
+
+    const invoice =
+        'DETAIL PESANAN KAMU\n\n' +
+        '✨ Jumlah Robux: `' + robux + '`\n' +
+        '👤 Username: `' + (user || '???') + '`\n' +
+        '🔑 Password: `' + (pass || '???') + '`\n' +
+        '🛡 Backup Code: `' + codesPlain.join(', ') + '`';
+
+    invLastInvoiceText = invoice;
+
+    const outputBox = document.getElementById('invOutputBox');
+    const escaped = invoice.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    outputBox.innerHTML = escaped.replace(/`([^`]+)`/g, '<span class="inv-code-span">`$1`</span>');
+
+    showToast('✅ Invoice berhasil dibuat!');
+    document.getElementById('invCopyStatus').classList.remove('show');
+}
+
+// --- Copy invoice ---
+function invCopyInvoice() {
+    if (!invLastInvoiceText) { showToast('❌ Generate invoice dulu!'); return; }
+    const doCopy = (text) => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        document.getElementById('invCopyStatus').classList.add('show');
+        showToast('✅ Invoice dicopy! Tinggal paste ke Telegram 🎉');
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(invLastInvoiceText)
+            .then(() => {
+                document.getElementById('invCopyStatus').classList.add('show');
+                showToast('✅ Invoice dicopy! Tinggal paste ke Telegram 🎉');
+            })
+            .catch(() => doCopy(invLastInvoiceText));
+    } else {
+        doCopy(invLastInvoiceText);
+    }
+}
+
 // ==================== MAIN INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Take Order Tele initialized! 🚀');
@@ -1365,6 +1661,27 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     initializeScrollButtons();
     initializeBackupFormatter();
+
+    // Invoice: codes textarea listener
+    document.getElementById('fCodes').addEventListener('input', invCheckCodes);
+
+    // Invoice: auto generate on paste/input
+    (function() {
+        const ta = document.getElementById('invRawPaste');
+        let timer = null;
+        ta.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                if (ta.value.trim().length > 20) invAutoParseAndGenerate();
+            }, 600);
+        });
+        ta.addEventListener('paste', function() {
+            clearTimeout(timer);
+            setTimeout(function() {
+                if (ta.value.trim().length > 20) invAutoParseAndGenerate();
+            }, 100);
+        });
+    })();
     
     // Event Listeners
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
@@ -1390,27 +1707,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById('showStats').addEventListener('click', showStats);
-    
     document.getElementById('toggleAllBtn').addEventListener('click', toggleAllTemplates);
-    
     document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
-
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

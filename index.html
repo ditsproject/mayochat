@@ -212,6 +212,110 @@
             </div>
         </section>
 
+        <!-- ==================== INVOICE MAKER ==================== -->
+        <section class="invoice-maker-section">
+            <h3><i class="fas fa-file-invoice"></i> Invoice Maker</h3>
+
+            <!-- MODAL: Koreksi Manual -->
+            <div class="inv-modal-overlay" id="invModalOverlay" onclick="invCloseModalOutside(event)">
+                <div class="inv-modal-box">
+                    <div class="inv-modal-header">
+                        <h3><i class="fas fa-keyboard"></i> Isi Manual / Koreksi</h3>
+                        <button class="inv-modal-close" onclick="invCloseModal()"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Nominal Robux</label>
+                        <input class="inv-form-control" id="fRobux" type="text" placeholder="cth: 500r, 1000, 2200 prem…">
+                        <div class="inv-hint"><i class="fas fa-info-circle"></i> Format bebas, otomatis jadi "500 Robux" atau "2200R + Premium"</div>
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Username</label>
+                        <input class="inv-form-control" id="fUser" type="text" placeholder="username Roblox">
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Password</label>
+                        <input class="inv-form-control" id="fPass" type="text" placeholder="password akun">
+                    </div>
+                    <div class="inv-form-group">
+                        <label>Backup Codes (paste 5 kode, format bebas)</label>
+                        <textarea class="inv-form-control" id="fCodes" rows="4" placeholder="Paste kode backup, bisa berantakan…"></textarea>
+                        <div id="invCodesFound" class="inv-codes-found"></div>
+                        <div id="invCodesNone" class="inv-codes-none">⚠️ Kode belum cukup / tidak ditemukan</div>
+                    </div>
+                    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+                        <button class="inv-btn inv-btn-pink" style="flex:1;" onclick="invGenerateInvoice(); invCloseModal();">
+                            <i class="fas fa-file-invoice"></i> Generate Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="backup-formatter">
+                <div class="formatter-header">
+                    <h4><i class="fas fa-magic"></i> Invoice Generator</h4>
+                    <div class="formatter-header-buttons">
+                        <button class="auto-paste-btn" onclick="invDoPaste()">
+                            <i class="fas fa-paste"></i> Auto Paste
+                        </button>
+                        <button class="btn-clear" onclick="invClearRaw()">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="formatter-container">
+                    <!-- LEFT: INPUT -->
+                    <div class="formatter-input">
+                        <div class="formatter-label">
+                            <i class="fas fa-keyboard"></i>
+                            <span>Paste Data Customer</span>
+                        </div>
+                        <textarea
+                            class="code-input"
+                            id="invRawPaste"
+                            placeholder="Paste semua chat customer di sini — username, password, nominal robux, kode backup, berantakan pun oke…"
+                            rows="8"
+                        ></textarea>
+                        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+                            <button class="inv-btn inv-btn-pink" style="flex:1;" onclick="invAutoParseAndGenerate()">
+                                <i class="fas fa-bolt"></i> Generate Invoice
+                            </button>
+                            <button class="inv-btn inv-btn-outline" onclick="invOpenModal()">
+                                <i class="fas fa-sliders-h"></i> Koreksi
+                            </button>
+                        </div>
+                        <div class="inv-parsed-preview" id="invParsedPreview">
+                            <div class="inv-pill" id="invPillRobux"><i class="fas fa-coins"></i> <span id="invPillRobuxVal">-</span></div>
+                            <div class="inv-pill" id="invPillUser"><i class="fas fa-user"></i> <span id="invPillUserVal">-</span></div>
+                            <div class="inv-pill" id="invPillPass"><i class="fas fa-key"></i> <span id="invPillPassVal">-</span></div>
+                            <div class="inv-pill" id="invPillCodes"><i class="fas fa-shield-alt"></i> <span id="invPillCodesVal">0 kode</span></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: OUTPUT -->
+                    <div class="formatter-output">
+                        <div class="formatter-label">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Hasil Invoice</span>
+                        </div>
+                        <div class="code-output inv-code-output" id="invOutputBox">DETAIL PESANAN KAMU
+
+✨ Jumlah Robux: 
+👤 Username: 
+🔑 Password: 
+🛡 Backup Code: </div>
+                        <button class="copy-btn" onclick="invCopyInvoice()">
+                            <i class="fas fa-copy"></i> Copy ke Telegram
+                        </button>
+                        <div id="invCopyStatus" class="inv-copy-status">
+                            <i class="fas fa-check-circle"></i> Berhasil dicopy ke clipboard!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ==================== END INVOICE MAKER ==================== -->
+
       <!-- Template Categories -->
         <section class="categories-section">
             <h3><i class="fas fa-folder"></i> Kategori Template</h3>
@@ -335,6 +439,9 @@
     <button class="fab" id="quickCopyFab" title="Quick Reply">
         <i class="fas fa-paper-plane"></i>
     </button>
+    <button class="fab fab-invoice" id="scrollToInvoiceFab" title="Invoice Maker">
+        <i class="fas fa-file-invoice"></i>
+    </button>
     <button class="fab fab-backup" id="scrollToBackupFab" title="Backup Formatter">
         <i class="fas fa-code"></i>
     </button>
@@ -348,9 +455,4 @@
     <script src="script.js"></script>
     <script src="script-login.js"></script>
 </body>
-
 </html>
-
-
-
-

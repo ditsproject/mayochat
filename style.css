@@ -1005,21 +1005,12 @@ body {
     transition: transform 0.1s ease;
 }
 
-.fab-home {
-    bottom: 11rem;
-}
-
-.fab-reseller {
-    bottom: 7rem;
-}
-
-#quickCopyFab {
-    bottom: 3rem;
-}
-
-.fab-backup {
-    bottom: 15rem;
-}
+/* FAB positions — tambah 1 slot untuk invoice */
+.fab-home      { bottom: 15rem; }
+.fab-reseller  { bottom: 11rem; }
+.fab-invoice   { bottom: 7rem; }
+.fab-backup    { bottom: 19rem; }
+#quickCopyFab  { bottom: 3rem; }
 
 .fab::after {
     content: attr(title);
@@ -1101,25 +1092,12 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .fab {
-        right: 1.5rem;
-    }
-    
-    .fab-home {
-        bottom: 12rem;
-    }
-    
-    .fab-reseller {
-        bottom: 8rem;
-    }
-    
-    .fab-backup {
-        bottom: 16rem;
-    }
-    
-    #quickCopyFab {
-        bottom: 2rem;
-    }
+    .fab { right: 1.5rem; }
+    .fab-home      { bottom: 16rem; }
+    .fab-reseller  { bottom: 12rem; }
+    .fab-invoice   { bottom: 8rem; }
+    .fab-backup    { bottom: 20rem; }
+    #quickCopyFab  { bottom: 2rem; }
 }
 
 @media (max-width: 480px) {
@@ -1162,21 +1140,11 @@ body {
         right: 1rem;
     }
     
-    .fab-home {
-        bottom: 11rem;
-    }
-    
-    .fab-reseller {
-        bottom: 7rem;
-    }
-    
-    .fab-backup {
-        bottom: 15rem;
-    }
-    
-    #quickCopyFab {
-        bottom: 1rem;
-    }
+    .fab-home      { bottom: 15rem; }
+    .fab-reseller  { bottom: 11rem; }
+    .fab-invoice   { bottom: 7rem; }
+    .fab-backup    { bottom: 19rem; }
+    #quickCopyFab  { bottom: 1rem; }
 }
 
 /* ==================== NEW HERO BANNER ==================== */
@@ -1673,3 +1641,165 @@ body.dark .loading-logo {
     font-size: 1.5rem;
     font-weight: 700;
 }
+
+/* ==================== INVOICE MAKER ==================== */
+.invoice-maker-section {
+    margin-bottom: 2rem;
+}
+
+.invoice-maker-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--text);
+}
+
+.invoice-maker-section h3 i {
+    color: var(--pink-dark);
+}
+
+/* Invoice output box */
+.inv-code-output {
+    word-break: break-word !important;
+    white-space: pre-wrap !important;
+}
+
+.inv-code-output .inv-code-span {
+    color: var(--pink-dark);
+    font-weight: 600;
+}
+
+.inv-output-placeholder {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.82rem;
+}
+
+/* Invoice buttons (scoped prefix inv- agar tidak tabrakan) */
+.inv-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s;
+}
+
+.inv-btn-pink  { background: var(--pink); color: white; }
+.inv-btn-pink:hover  { background: var(--pink-dark); transform: translateY(-2px); }
+.inv-btn-outline { background: transparent; border: 1.5px solid var(--pink); color: var(--text); }
+.inv-btn-outline:hover { background: var(--pink); color: white; }
+
+/* Pills */
+.inv-parsed-preview {
+    display: none;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+.inv-parsed-preview.show { display: flex; }
+
+.inv-pill {
+    display: flex; align-items: center; gap: 0.35rem;
+    background: var(--pink-light); border: 1px solid var(--pink);
+    border-radius: 20px; padding: 0.2rem 0.65rem;
+    font-size: 0.75rem; font-weight: 600; color: var(--text);
+}
+.inv-pill > i { color: var(--pink-dark); font-size: 0.7rem; }
+.inv-pill.ok  { border-color: var(--success); background: rgba(16,185,129,0.1); }
+.inv-pill.ok > i  { color: var(--success); }
+.inv-pill.warn { border-color: var(--danger);  background: rgba(239,68,68,0.1); }
+.inv-pill.warn > i { color: var(--danger); }
+
+/* Codes found / none */
+.inv-codes-found {
+    font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 20px;
+    background: rgba(16,185,129,0.12); color: var(--success);
+    font-weight: 600; display: none; margin-top: 0.4rem; width: fit-content;
+}
+.inv-codes-found.show { display: block; }
+
+.inv-codes-none {
+    font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 20px;
+    background: rgba(239,68,68,0.12); color: var(--danger);
+    font-weight: 600; display: none; margin-top: 0.4rem; width: fit-content;
+}
+.inv-codes-none.show { display: block; }
+
+/* Copy status */
+.inv-copy-status {
+    display: none; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; color: var(--success);
+    font-weight: 600; margin-top: 0.5rem;
+}
+.inv-copy-status.show { display: flex; }
+
+/* Modal overlay */
+.inv-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    z-index: 500; display: flex; align-items: center; justify-content: center;
+    padding: 1rem; opacity: 0; visibility: hidden; transition: all 0.25s;
+}
+.inv-modal-overlay.open { opacity: 1; visibility: visible; }
+
+.inv-modal-box {
+    background: var(--card); border-radius: var(--radius);
+    padding: 1.5rem; width: 100%; max-width: 480px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: translateY(20px); transition: transform 0.25s;
+    max-height: 90vh; overflow-y: auto;
+}
+.inv-modal-overlay.open .inv-modal-box { transform: translateY(0); }
+
+.inv-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.2rem; padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--pink-light);
+}
+.inv-modal-header h3 {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 1rem; font-weight: 600;
+}
+.inv-modal-header h3 i { color: var(--pink-dark); }
+
+.inv-modal-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid var(--pink-light); background: transparent;
+    color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; transition: all 0.2s;
+}
+.inv-modal-close:hover { background: var(--pink); color: white; border-color: var(--pink); }
+
+/* Modal form */
+.inv-form-group { margin-bottom: 1rem; }
+.inv-form-group label {
+    display: block; font-size: 0.8rem; font-weight: 600;
+    color: var(--muted); margin-bottom: 0.35rem;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.inv-form-control {
+    width: 100%; padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--pink-light); border-radius: 8px;
+    background: var(--bg); color: var(--text);
+    font-family: 'Poppins', sans-serif; font-size: 0.875rem; transition: all 0.3s;
+}
+.inv-form-control:focus {
+    outline: none; border-color: var(--pink);
+    box-shadow: 0 0 0 3px rgba(249,180,199,0.2);
+}
+textarea.inv-form-control { resize: vertical; min-height: 100px; }
+
+.inv-hint {
+    font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem;
+    display: flex; align-items: flex-start; gap: 0.3rem;
+}
+.inv-hint i { color: var(--pink); margin-top: 2px; }
