@@ -1180,29 +1180,46 @@ function invAutoParseAndGenerate() {
     if (passMatch) document.getElementById('fPass').value = passMatch[1].trim();
 
     // ---- ROBUX ----
-    // Priority: cari baris dengan label order/nominal/jumlah/beli/robux
-    // "ORDER BRP:500robux" → "500 Robux"
-    // Ambil SELURUH sisa baris setelah label, bukan cuma angka — biar "70k = 500 robux" masuk semua ke invFormatRobux
-    const ROBUX_LABEL = /(?:order\s*(?:brp|berapa)?|nominal|jumlah|beli|robux)\s*[:\-–]?\s*(.+)/i;
-    let robuxRaw = '';
-    const lines = raw.split(/\n/);
-    for (const line of lines) {
-        // Skip baris yang berisi backup codes
-        if (/backup|code\s*back|kode\s*(?:backup|pemulihan)/i.test(line)) continue;
-        const m = line.match(ROBUX_LABEL);
-        if (m) { robuxRaw = m[1].trim(); break; }
+    // Multi-pass parser: prioritas baris dengan label + titik dua + angka
+    // Handles: "ORDER BRP: 1000 robux", "70k = 500 robux", "Rp70.000 = 500 robux", dll
+    const robuxLines = raw.split(/\n/).filter(l => !/backup|code\s*back|kode\s*(?:backup|pemulihan)/i.test(l));
+    let robuxVal = '';
+
+    // Pass 1: label + titik dua + angka — "ORDER BRP: 1000 robux", "nominal: 500"
+    const LABELED_COLON = /(?:order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*:\s*(.+)/i;
+    for (const line of robuxLines) {
+        const m = line.match(LABELED_COLON);
+        if (m && /\d/.test(m[1])) { robuxVal = m[1].trim(); break; }
     }
-    // Fallback: cari angka exact match pricelist (skip baris backup)
-    if (!robuxRaw) {
-        const cleanRaw = raw.replace(/(?:^|\n)[^\n]*(?:backup|code\s*back|kode\s*(?:backup|pemulihan))[^\n]*/gi, '');
+
+    // Pass 2: "robux: 1000" atau "robux : 500"
+    if (!robuxVal) {
+        for (const line of robuxLines) {
+            const m = line.match(/robux\s*:\s*(.+)/i);
+            if (m && /\d/.test(m[1])) { robuxVal = m[1].trim(); break; }
+        }
+    }
+
+    // Pass 3: "= 500 robux" atau "= 2200R + Premium" — format harga dulu baru nominal
+    if (!robuxVal) {
+        for (const line of robuxLines) {
+            const m = line.match(/=\s*(\d[\d.,]*\s*(?:r(?:obux)?|\+?\s*prem(?:ium)?)?(?:\s*\+\s*prem(?:ium)?)?)/i);
+            if (m) { robuxVal = m[1].trim(); break; }
+        }
+    }
+
+    // Pass 4: fallback — scan semua angka, exact match pricelist
+    if (!robuxVal) {
+        const cleanRaw = robuxLines.filter(l => /\d/.test(l)).join('\n');
         const isPrem = /prem(?:ium)?/i.test(cleanRaw);
         const normalized = cleanRaw.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
         const allNums = (normalized.match(/\d+/g) || []).map(Number);
         for (const n of allNums) {
-            if (INV_PRICELIST.includes(n)) { robuxRaw = isPrem ? n + 'R + Premium' : String(n); break; }
+            if (INV_PRICELIST.includes(n)) { robuxVal = isPrem ? n + 'R + Premium' : String(n); break; }
         }
     }
-    if (robuxRaw) document.getElementById('fRobux').value = invFormatRobux(robuxRaw) || robuxRaw;
+
+    if (robuxVal) document.getElementById('fRobux').value = invFormatRobux(robuxVal) || robuxVal;
 
     // ---- BACKUP CODES ----
     document.getElementById('fCodes').value = raw;
