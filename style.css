@@ -1005,12 +1005,13 @@ body {
     transition: transform 0.1s ease;
 }
 
-/* FAB positions — tambah 1 slot untuk invoice */
-.fab-home      { bottom: 15rem; }
-.fab-reseller  { bottom: 11rem; }
-.fab-invoice   { bottom: 7rem; }
-.fab-backup    { bottom: 19rem; }
-#quickCopyFab  { bottom: 3rem; }
+.fab { right: 1.5rem; }
+    /* Gap seragam 4rem di semua breakpoint */
+    .fab-home      { bottom: 18rem; }
+    .fab-backup    { bottom: 14rem; }
+    .fab-reseller  { bottom: 10rem; }
+    .fab-invoice   { bottom: 6rem; }
+    #quickCopyFab  { bottom: 2rem; }
 
 .fab::after {
     content: attr(title);
@@ -1092,11 +1093,13 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .fab { right: 1.5rem; }
-    .fab-home      { bottom: 16rem; }
-    .fab-reseller  { bottom: 12rem; }
-    .fab-invoice   { bottom: 8rem; }
-    .fab-backup    { bottom: 20rem; }
+    .fab { width: 50px; height: 50px; font-size: 1.1rem; right: 1rem; }
+    /* Gap seragam 4rem di phone — ukuran FAB lebih kecil (50px ≈ 3.125rem) */
+    /* Pakai rem supaya tetap konsisten dengan font size */
+    .fab-home      { bottom: 18rem; }
+    .fab-backup    { bottom: 14rem; }
+    .fab-reseller  { bottom: 10rem; }
+    .fab-invoice   { bottom: 6rem; }
     #quickCopyFab  { bottom: 2rem; }
 }
 
@@ -1140,11 +1143,13 @@ body {
         right: 1rem;
     }
     
-    .fab-home      { bottom: 15rem; }
-    .fab-reseller  { bottom: 11rem; }
-    .fab-invoice   { bottom: 7rem; }
-    .fab-backup    { bottom: 19rem; }
-    #quickCopyFab  { bottom: 1rem; }
+    /* FAB positions — gap seragam 4rem, mulai 2rem dari bawah */
+.fab-home      { bottom: 18rem; }
+.fab-backup    { bottom: 14rem; }
+.fab-reseller  { bottom: 10rem; }
+.fab-invoice   { bottom: 6rem; }
+#quickCopyFab  { bottom: 2rem; }
+
 }
 
 /* ==================== NEW HERO BANNER ==================== */
