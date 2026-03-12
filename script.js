@@ -544,159 +544,128 @@ Screenshot errornya, kirim ke mimin biar dicek.`
 // ==================== STATE ====================
 let templatesHidden = true;
 
-// ==================== HELPER FUNCTIONS ====================
-function getCategoryName(category) {
-    const categories = {
-        'order': 'Order',
-        'problem': 'Problem',
-        'status': 'Status',
-        'security': 'Security',
-        'other': 'Lainnya'
-    };
-    return categories[category] || 'Lainnya';
+// ==================== HELPER ====================
+function getCategoryName(cat) {
+    return { order:'Order', problem:'Problem', status:'Status', security:'Security', other:'Lainnya', keamanan:'Keamanan' }[cat] || 'Lainnya';
 }
 
 // ==================== LOAD TEMPLATES ====================
 function loadTemplates() {
-    const templatesGrid = document.getElementById('templatesGrid');
-    templatesGrid.innerHTML = '';
+    const grid = document.getElementById('templatesGrid');
+    grid.innerHTML = '';
     document.getElementById('templateCount').textContent = templatesData.length;
-    templatesData.forEach(template => {
-        const usedCount = localStorage.getItem(`template-${template.id}-used`) || 0;
-        const templateCard = document.createElement('div');
-        templateCard.className = 'template-card';
-        templateCard.setAttribute('data-id', template.id);
-        templateCard.setAttribute('data-category', template.category);
-        templateCard.innerHTML = `
-            <div class="template-header">
-                <div class="template-header-left">
-                    <h4 class="template-name">${template.name}</h4>
+
+    templatesData.forEach(t => {
+        const used = localStorage.getItem(`template-${t.id}-used`) || 0;
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.setAttribute('data-id', t.id);
+        card.setAttribute('data-category', t.category);
+        card.innerHTML = `
+            <div class="template-card-inner">
+                <div class="template-header">
+                    <h4 class="template-name">${t.name}</h4>
+                    <span class="template-category">${getCategoryName(t.category)}</span>
                 </div>
-                <span class="template-category">${getCategoryName(template.category)}</span>
-            </div>
-            <div class="template-content${templatesHidden ? ' hidden' : ''}">
-                ${template.content}
-            </div>
-            <div class="template-footer">
-                <span class="usage-count">Digunakan: <strong>${usedCount}</strong> kali</span>
-                <div class="template-actions">
-                    <button class="btn-copy" data-id="${template.id}">Copy</button>
+                <div class="template-content${templatesHidden ? ' hidden' : ''}">${t.content}</div>
+                <div class="template-footer">
+                    <span class="usage-count">Digunakan: <strong>${used}</strong>×</span>
+                    <button class="btn-copy" data-id="${t.id}"><i class="fas fa-copy"></i> Copy</button>
                 </div>
             </div>
         `;
-        templatesGrid.appendChild(templateCard);
+        grid.appendChild(card);
     });
     addTemplateEventListeners();
 }
 
-// ==================== COPY TEMPLATE FUNCTIONALITY ====================
 function addTemplateEventListeners() {
     document.querySelectorAll('.btn-copy').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const templateId = this.getAttribute('data-id');
-            copyTemplate(templateId);
+            copyTemplate(this.getAttribute('data-id'));
         });
     });
     document.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('btn-copy') && !e.target.closest('.btn-copy')) {
-                const templateId = this.getAttribute('data-id');
-                copyTemplate(templateId);
-            }
+            if (!e.target.closest('.btn-copy')) copyTemplate(this.getAttribute('data-id'));
         });
     });
 }
 
-function handleQuickAction(templateType) {
-    const templateMap = {
-        'order': 1, 'backup': 4, 'list': 99, 'error': 7, '2step': 23,
-        'qr': 8, 'queue': 20, 'prem': 10, 'thanks': 14, 'premium': 15,
-        'fix': 25, 'wrongpw': 6, 'estimation': 9, 'checklogin': 2,
-        'checkemail': 3, 'reset': 11, 'webproblem': 21, 'regencode': 22,
-        'gp': 16, 'gkmsk': 5
+// ==================== QUICK ACTIONS ====================
+function handleQuickAction(type) {
+    const map = {
+        'order':1,'backup':4,'list':99,'error':7,'2step':23,
+        'qr':8,'queue':20,'prem':10,'thanks':14,'premium':15,
+        'fix':25,'wrongpw':6,'estimation':9,'checklogin':2,
+        'checkemail':3,'reset':11,'webproblem':21,'regencode':22,
+        'gp':16,'gkmsk':5
     };
-    if (templateMap[templateType]) copyTemplate(templateMap[templateType]);
+    if (map[type]) copyTemplate(map[type]);
 }
 
+// ==================== COPY ====================
 function copyTemplate(templateId) {
-    const template = templatesData.find(t => t.id == templateId);
-    if (!template) return;
-    const text = template.content;
+    const t = templatesData.find(t => t.id == templateId);
+    if (!t) return;
+    const text = t.content;
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => {
-            handleCopySuccess(templateId, template.name);
-        }).catch(err => {
-            fallbackCopyText(text, templateId, template.name);
-        });
+        navigator.clipboard.writeText(text).then(() => handleCopySuccess(templateId, t.name)).catch(() => fallbackCopy(text, templateId, t.name));
     } else {
-        fallbackCopyText(text, templateId, template.name);
+        fallbackCopy(text, templateId, t.name);
     }
 }
 
-function handleCopySuccess(templateId, templateName) {
-    let usedCount = parseInt(localStorage.getItem(`template-${templateId}-used`) || 0);
-    usedCount++;
-    localStorage.setItem(`template-${templateId}-used`, usedCount);
-    const templateCard = document.querySelector(`.template-card[data-id="${templateId}"]`);
-    if (templateCard) {
-        const usageSpan = templateCard.querySelector('.usage-count strong');
-        if (usageSpan) usageSpan.textContent = usedCount;
-        templateCard.classList.add('copied', 'pulse');
-        setTimeout(() => templateCard.classList.remove('copied', 'pulse'), 1000);
+function handleCopySuccess(id, name) {
+    let n = parseInt(localStorage.getItem(`template-${id}-used`) || 0) + 1;
+    localStorage.setItem(`template-${id}-used`, n);
+    const card = document.querySelector(`.template-card[data-id="${id}"]`);
+    if (card) {
+        const u = card.querySelector('.usage-count strong');
+        if (u) u.textContent = n;
+        card.classList.add('copied','pulse');
+        setTimeout(() => card.classList.remove('copied','pulse'), 800);
     }
     updateStats();
-    showToast(`✅ "${templateName}" dicopy ke clipboard! 📋`);
+    showToast(`✅ "${name}" dicopy!`);
 }
 
-function fallbackCopyText(text, templateId, templateName) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-999999px";
-    textArea.style.top = "-999999px";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-        if (document.execCommand('copy')) handleCopySuccess(templateId, templateName);
-        else showToast('❌ Gagal menyalin template');
-    } catch (err) {
-        showToast('❌ Gagal menyalin template');
-    } finally {
-        document.body.removeChild(textArea);
-    }
+function fallbackCopy(text, id, name) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy') ? handleCopySuccess(id, name) : showToast('❌ Gagal copy'); }
+    catch { showToast('❌ Gagal copy'); }
+    finally { document.body.removeChild(ta); }
 }
 
-// ==================== SEARCH FUNCTIONALITY ====================
+// ==================== SEARCH ====================
 function initializeSearch() {
     document.getElementById('searchInput').addEventListener('input', function() {
-        filterTemplatesBySearch(this.value.toLowerCase().trim());
+        const q = this.value.toLowerCase().trim();
+        document.querySelectorAll('.template-card').forEach(card => {
+            if (!q) { card.style.display = ''; return; }
+            const name = card.querySelector('.template-name').textContent.toLowerCase();
+            const content = card.querySelector('.template-content').textContent.toLowerCase();
+            card.style.display = (name.includes(q) || content.includes(q)) ? '' : 'none';
+        });
     });
 }
 
-function filterTemplatesBySearch(searchTerm) {
+function filterTemplatesByCategory(cat) {
     document.querySelectorAll('.template-card').forEach(card => {
-        if (!searchTerm) { card.style.display = 'block'; return; }
-        const name = card.querySelector('.template-name').textContent.toLowerCase();
-        const content = card.querySelector('.template-content').textContent.toLowerCase();
-        card.style.display = (name.includes(searchTerm) || content.includes(searchTerm)) ? 'block' : 'none';
+        card.style.display = (cat === 'all' || card.getAttribute('data-category') === cat) ? '' : 'none';
     });
 }
 
-function filterTemplatesByCategory(category) {
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.style.display = (category === 'all' || card.getAttribute('data-category') === category) ? 'block' : 'none';
-    });
-}
-
-// ==================== THEME FUNCTIONALITY ====================
+// ==================== THEME ====================
 function toggleTheme() {
     document.body.classList.toggle('dark');
-    const isDark = document.body.classList.contains('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    document.querySelector('#themeToggle i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-    showToast(`Mode ${isDark ? 'Gelap' : 'Terang'} diaktifkan ✨`);
+    const dark = document.body.classList.contains('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    document.querySelector('#themeToggle i').className = dark ? 'fas fa-sun' : 'fas fa-moon';
+    showToast(`${dark ? '🌙 Dark' : '☀️ Light'} mode aktif`);
 }
 
 function initializeTheme() {
@@ -706,78 +675,343 @@ function initializeTheme() {
     }
 }
 
-// ==================== TOGGLE ALL TEMPLATES ====================
+// ==================== TOGGLE TEMPLATES ====================
 function toggleAllTemplates() {
-    const templatesGrid = document.getElementById('templatesGrid');
-    const toggleAllBtn = document.getElementById('toggleAllBtn');
+    const grid = document.getElementById('templatesGrid');
+    const btn = document.getElementById('toggleAllBtn');
     templatesHidden = !templatesHidden;
     if (templatesHidden) {
-        templatesGrid.classList.add('hidden');
-        toggleAllBtn.innerHTML = '<i class="fas fa-eye"></i><span>Tampilkan</span>';
-        document.querySelectorAll('.template-content').forEach(c => c.classList.add('hidden'));
-        showToast('👁️ Semua template disembunyikan');
+        grid.classList.add('hidden');
+        btn.innerHTML = '<i class="fas fa-eye"></i><span>Tampilkan</span>';
+        document.querySelectorAll('.template-content').forEach(c => { c.classList.remove('expanded'); c.classList.add('hidden'); });
+        showToast('Template disembunyikan');
     } else {
-        templatesGrid.classList.remove('hidden');
-        toggleAllBtn.innerHTML = '<i class="fas fa-eye-slash"></i><span>Sembunyikan</span>';
+        grid.classList.remove('hidden');
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i><span>Sembunyikan</span>';
         document.querySelectorAll('.template-content').forEach(c => c.classList.remove('hidden'));
-        showToast('👁️ Semua template ditampilkan');
+        showToast('Template ditampilkan');
     }
 }
 
-// ==================== STATISTICS ====================
-function copyQuickReply() {
-    const quickReply = "Tunggu ya kak, mimin cek dulu! 😊";
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(quickReply).then(() => showToast('✅ Quick reply dicopy! ⚡'));
-    } else {
-        const ta = document.createElement("textarea");
-        ta.value = quickReply;
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta);
-        showToast('✅ Quick reply dicopy! ⚡');
-    }
+// ==================== STATS ====================
+function updateStats() {
+    let total = 0;
+    templatesData.forEach(t => { total += parseInt(localStorage.getItem(`template-${t.id}-used`) || 0); });
+    const el = document.getElementById('totalUsed');
+    if (el) el.textContent = total;
+    const badge = document.querySelector('.stat-badge');
+    if (badge) badge.textContent = total;
 }
 
 function showStats() {
-    let totalUsed = 0;
-    templatesData.forEach(t => { totalUsed += parseInt(localStorage.getItem(`template-${t.id}-used`) || 0); });
-    alert(`📊 STATISTIK TEMPLATE\n====================\nTotal Template: ${templatesData.length}\nTemplate Dipakai Hari Ini: ${totalUsed}\nTheme: ${document.body.classList.contains('dark') ? 'Dark' : 'Light'}\n====================`);
+    let total = 0;
+    templatesData.forEach(t => { total += parseInt(localStorage.getItem(`template-${t.id}-used`) || 0); });
+    alert(`📊 STATISTIK TEMPLATE\n====================\nTotal Template: ${templatesData.length}\nTotal Dipakai: ${total}\nTheme: ${document.body.classList.contains('dark') ? 'Dark' : 'Light'}`);
 }
 
-function updateStats() {
-    let totalUsed = 0;
-    templatesData.forEach(t => { totalUsed += parseInt(localStorage.getItem(`template-${t.id}-used`) || 0); });
-    document.getElementById('totalUsed').textContent = totalUsed;
-    document.querySelector('.stat-badge').textContent = totalUsed;
+// ==================== TOAST ====================
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (t._tid) clearTimeout(t._tid);
+    t.textContent = msg;
+    t.classList.add('show');
+    t._tid = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ==================== TOAST NOTIFICATION ====================
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    if (toast.timeoutId) clearTimeout(toast.timeoutId);
-    toast.textContent = message;
-    toast.classList.add('show');
-    toast.timeoutId = setTimeout(() => toast.classList.remove('show'), 3000);
+// ==================== QUICK REPLY FAB ====================
+function copyQuickReply() {
+    const text = 'Tunggu ya kak, mimin cek dulu! 😊';
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => showToast('✅ Quick reply dicopy!'));
+    } else {
+        const ta = document.createElement('textarea'); ta.value = text;
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast('✅ Quick reply dicopy!');
+    }
 }
 
-// ==================== RESELLER BOT FUNCTIONALITY ====================
+// ==================== SCROLL BUTTONS ====================
+function initializeScrollButtons() {
+    document.getElementById('scrollToResellerFab').addEventListener('click', () => {
+        document.querySelector('.reseller-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    document.getElementById('scrollToTopFab').addEventListener('click', () => {
+        window.scrollTo({ top:0, behavior:'smooth' });
+        showToast('🏠 Kembali ke atas');
+    });
+    document.getElementById('scrollToBackupFab').addEventListener('click', () => {
+        document.querySelector('.backup-formatter-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    document.getElementById('scrollToInvoiceFab').addEventListener('click', () => {
+        document.querySelector('.invoice-maker-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
+}
+
+// ==================== BACKUP CODE FORMATTER ====================
+function initializeBackupFormatter() {
+    const input = document.getElementById('backupInput');
+    document.getElementById('clearBackupBtn').addEventListener('click', clearBackupFields);
+    document.getElementById('copyBackupBtn').addEventListener('click', copyBackupResult);
+    document.getElementById('autoPasteBtn').addEventListener('click', pasteFromClipboard);
+    let timer;
+    input.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(() => { if (this.value.trim()) generateBackupFormat(); }, 300);
+    });
+    document.getElementById('backupOutput').addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!this.textContent.includes('code back up 1: \n')) copyBackupResult();
+    });
+}
+
+function extractBackupCodes(text) {
+    let clean = text.trim()
+        .replace(/[•·]/g, '')
+        .replace(/code\s*back\s*up\s*\d+\s*:/gi, '')
+        .replace(/code\s*\d+\s*:/gi, '')
+        .replace(/backup\s*\d+\s*:/gi, '')
+        .replace(/-/g, '');
+    const codes = [];
+    const parts = clean.split(/[\n\r,.;]+/);
+    for (let c of parts) {
+        c = c.trim();
+        if (c.length >= 8 && c.length <= 12 && /^[a-z0-9]+$/i.test(c)) {
+            codes.push(c);
+            if (codes.length >= 5) break;
+        }
+    }
+    if (codes.length < 5) {
+        const direct = clean.match(/[a-z0-9]{8,12}/gi);
+        if (direct) for (let i = 0; i < direct.length && codes.length < 5; i++) {
+            if (!codes.includes(direct[i])) codes.push(direct[i]);
+        }
+    }
+    return codes.slice(0, 5);
+}
+
+function generateBackupFormat() {
+    const input = document.getElementById('backupInput').value.trim();
+    const out = document.getElementById('backupOutput');
+    const empty = '🔍 WAJIB DIISI 5 CODE BACKUP!!\n- code back up 1: \n- code back up 2: \n- code back up 3: \n- code back up 4: \n- code back up 5:';
+    if (!input) { out.textContent = empty; return; }
+    const codes = extractBackupCodes(input);
+    if (!codes.length) { out.textContent = empty; showToast('❌ Kode tidak ditemukan'); return; }
+    const final = [...codes];
+    while (final.length < 5) final.push(codes[codes.length - 1]);
+    out.textContent = `🔍 WAJIB DIISI 5 CODE BACKUP!!\n${final.map((c,i) => `- code back up ${i+1}: \`${c}\``).join('\n')}`;
+    showToast(codes.length < 5 ? `⚠️ ${codes.length} kode ditemukan` : `✅ ${codes.length} kode diformat!`);
+}
+
+function clearBackupFields() {
+    document.getElementById('backupInput').value = '';
+    document.getElementById('backupOutput').textContent = '🔍 WAJIB DIISI 5 CODE BACKUP!!\n- code back up 1: \n- code back up 2: \n- code back up 3: \n- code back up 4: \n- code back up 5:';
+    showToast('🧹 Field dibersihkan!');
+}
+
+async function pasteFromClipboard() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('backupInput').value = text;
+        generateBackupFormat();
+        showToast('📋 Paste berhasil!');
+    } catch { showToast('❌ Gagal baca clipboard'); }
+}
+
+function copyBackupResult() {
+    const text = document.getElementById('backupOutput').textContent;
+    const doCopy = (t) => {
+        const ta = document.createElement('textarea'); ta.value = t;
+        ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy') ? showToast('✅ Format dicopy!') : showToast('❌ Gagal'); }
+        catch { showToast('❌ Gagal'); } finally { document.body.removeChild(ta); }
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ Format dicopy!');
+            const btn = document.getElementById('copyBackupBtn');
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy Format'; }, 2000);
+        }).catch(() => doCopy(text));
+    } else { doCopy(text); }
+}
+
+// ==================== INVOICE MAKER ====================
+const INV_PRICELIST = [
+    80, 160, 240, 320, 500, 1000, 1080, 1160, 1240, 1320, 1500,
+    2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500,
+    7000, 7500, 8000, 8500, 9000, 9500, 10000, 450, 2200
+];
+
+function invOpenModal()  { document.getElementById('invModalOverlay').classList.add('open'); }
+function invCloseModal() { document.getElementById('invModalOverlay').classList.remove('open'); }
+function invCloseModalOutside(e) { if (e.target === document.getElementById('invModalOverlay')) invCloseModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { invCloseModal(); addressModalClose(); } });
+
+function invFormatRobux(raw) {
+    if (!raw) return '';
+    const s = raw.trim();
+    const isPrem = /prem(?:ium)?/i.test(s);
+    const normalized = s.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+    const deK = normalized.replace(/\b(\d+)[kK]\b/g, (_,n) => String(parseInt(n)*1000));
+    const nums = (deK.match(/\d+/g)||[]).map(Number);
+    if (!nums.length) return raw;
+    for (const n of nums) {
+        if (INV_PRICELIST.includes(n)) return isPrem ? n+'R + Premium' : n+' Robux';
+    }
+    const best = nums.reduce((a,b) => {
+        const da = Math.min(...INV_PRICELIST.map(p=>Math.abs(a-p)));
+        const db = Math.min(...INV_PRICELIST.map(p=>Math.abs(b-p)));
+        return da<=db?a:b;
+    });
+    return isPrem ? best+'R + Premium' : best+' Robux';
+}
+
+function invExtractCodes(text) {
+    if (!text) return [];
+    const codes = [];
+    const lp = /(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*`?([a-z0-9]{7,14})`?/gi;
+    let m;
+    while ((m = lp.exec(text)) !== null) {
+        const c = m[1].toLowerCase();
+        if (!codes.includes(c)) { codes.push(c); if (codes.length>=5) break; }
+    }
+    if (codes.length>=5) return codes.slice(0,5);
+    const cleaned = text
+        .replace(/[-•·]?\s*(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*/gi,' ')
+        .replace(/[^\w\s,;|\n]/g,' ');
+    const tokens = cleaned.split(/[\s,;|\n\r]+/);
+    for (const tok of tokens) {
+        const t = tok.replace(/`/g,'').toLowerCase().trim();
+        if (t.length>=7 && t.length<=14 && /^[a-z0-9]+$/.test(t) && !codes.includes(t)) {
+            codes.push(t); if (codes.length>=5) break;
+        }
+    }
+    return codes.slice(0,5);
+}
+
+function invCheckCodes() {
+    const codes = invExtractCodes(document.getElementById('fCodes').value);
+    const found = document.getElementById('invCodesFound');
+    const none  = document.getElementById('invCodesNone');
+    if (codes.length>0) { found.textContent='✅ '+codes.length+' kode ditemukan'; found.classList.add('show'); none.classList.remove('show'); }
+    else { found.classList.remove('show'); none.classList.add('show'); }
+}
+
+function invUpdatePills() {
+    const robux = document.getElementById('fRobux').value.trim();
+    const user  = document.getElementById('fUser').value.trim();
+    const pass  = document.getElementById('fPass').value.trim();
+    const codes = invExtractCodes(document.getElementById('fCodes').value);
+    const sp = (id,vid,val,ok) => {
+        document.getElementById(vid).textContent = val||'–';
+        document.getElementById(id).className = 'inv-pill '+(ok?'ok':'warn');
+    };
+    sp('invPillRobux','invPillRobuxVal', robux?invFormatRobux(robux):'', !!robux);
+    sp('invPillUser','invPillUserVal', user, !!user);
+    sp('invPillPass','invPillPassVal', pass?'••••':'', !!pass);
+    sp('invPillCodes','invPillCodesVal', codes.length+' kode', codes.length>=5);
+    document.getElementById('invParsedPreview').classList.add('show');
+}
+
+function invAutoParseAndGenerate() {
+    const rawInput = document.getElementById('invRawPaste').value;
+    if (!rawInput.trim()) { showToast('❌ Teks kosong!'); return; }
+    const raw = rawInput.replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g,'');
+    const um = raw.match(/(?:username|usn|user)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
+    if (um) document.getElementById('fUser').value = um[1].trim();
+    const pm = raw.match(/(?:password|pw|pass)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
+    if (pm) document.getElementById('fPass').value = pm[1].trim();
+    const robuxLines = raw.split(/\n/).filter(l => !/backup|code\s*back|kode\s*(?:backup|pemulihan)/i.test(l));
+    let rv = '';
+    const LC = /(?:order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*:\s*(.+)/i;
+    for (const l of robuxLines) { const m=l.match(LC); if(m&&/\d/.test(m[1])){ rv=m[1].trim(); break; } }
+    if (!rv) for (const l of robuxLines) { const m=l.match(/robux\s*:\s*(.+)/i); if(m&&/\d/.test(m[1])){ rv=m[1].trim(); break; } }
+    if (!rv) for (const l of robuxLines) { const m=l.match(/=\s*(\d[\d.,]*\s*(?:r(?:obux)?|\+?\s*prem(?:ium)?)?(?:\s*\+\s*prem(?:ium)?)?)/i); if(m){ rv=m[1].trim(); break; } }
+    if (!rv) {
+        const clean2 = robuxLines.filter(l=>/\d/.test(l)).join('\n');
+        const isPrem = /prem(?:ium)?/i.test(clean2);
+        const norm2 = clean2.replace(/(\d)[.,](\d{3})(?!\d)/g,'$1$2');
+        const allN = (norm2.match(/\d+/g)||[]).map(Number);
+        for (const n of allN) { if(INV_PRICELIST.includes(n)){ rv=isPrem?n+'R + Premium':String(n); break; } }
+    }
+    if (rv) document.getElementById('fRobux').value = invFormatRobux(rv)||rv;
+    document.getElementById('fCodes').value = raw;
+    invCheckCodes(); invUpdatePills(); invGenerateInvoice();
+}
+
+function invClearRaw() {
+    document.getElementById('invRawPaste').value = '';
+    document.getElementById('invParsedPreview').classList.remove('show');
+    document.getElementById('invOutputBox').textContent = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
+    invLastInvoiceText = '';
+    document.getElementById('invCopyStatus').classList.remove('show');
+    showToast('🧹 Cleared!');
+}
+
+async function invDoPaste() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) { showToast('❌ Clipboard kosong!'); return; }
+        document.getElementById('invRawPaste').value = text;
+        invAutoParseAndGenerate();
+        showToast('📋 Auto paste berhasil!');
+    } catch { showToast('❌ Gagal baca clipboard. Izinkan akses dulu.'); }
+}
+
+let invLastInvoiceText = '';
+function invGenerateInvoice() {
+    const robuxRaw = document.getElementById('fRobux').value.trim();
+    const user     = document.getElementById('fUser').value.trim();
+    const pass     = document.getElementById('fPass').value.trim();
+    const codesRaw = document.getElementById('fCodes').value;
+    if (!robuxRaw && !user && !pass) { showToast('❌ Isi dulu data customernya!'); return; }
+    const robux = invFormatRobux(robuxRaw)||robuxRaw||'???';
+    const codes = invExtractCodes(codesRaw);
+    const cp = []; for (let i=0;i<5;i++) cp.push(codes[i]||'???');
+    const invoice = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: `'+robux+'`\n👤 Username: `'+(user||'???')+'`\n🔑 Password: `'+(pass||'???')+'`\n🛡 Backup Code: `'+cp.join(', ')+'`';
+    invLastInvoiceText = invoice;
+    const box = document.getElementById('invOutputBox');
+    const esc = invoice.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    box.innerHTML = esc.replace(/`([^`]+)`/g,'<span class="inv-code-span">`$1`</span>');
+    showToast('✅ Invoice dibuat!');
+    document.getElementById('invCopyStatus').classList.remove('show');
+}
+
+function invCopyInvoice() {
+    if (!invLastInvoiceText) { showToast('❌ Generate invoice dulu!'); return; }
+    const doCopy = (t) => {
+        const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        document.getElementById('invCopyStatus').classList.add('show');
+        showToast('✅ Invoice dicopy! Paste ke Telegram 🎉');
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(invLastInvoiceText)
+            .then(()=>{ document.getElementById('invCopyStatus').classList.add('show'); showToast('✅ Invoice dicopy! Paste ke Telegram 🎉'); })
+            .catch(()=>doCopy(invLastInvoiceText));
+    } else { doCopy(invLastInvoiceText); }
+}
+
+// ==================== RESELLER — NEW DESIGN ====================
 const nominalData = [
-    { amount: "80robux", price: "Rp 14.700" },
-    { amount: "80robux 2", price: "Rp 29.400" },
-    { amount: "80robux 3", price: "Rp 44.100" },
-    { amount: "80robux 4", price: "Rp 58.800" },
-    { amount: "450prem", price: "Rp 73.500" },
-    { amount: "500robux", price: "Rp 73.500" },
-    { amount: "1000prem", price: "Rp 147.000" },
-    { amount: "1000robux", price: "Rp 147.000" },
-    { amount: "1500robux", price: "Rp 220.500" },
-    { amount: "2000robux", price: "Rp 294.000" },
-    { amount: "2200prem", price: "Rp 294.000" },
-    { amount: "2500robux", price: "Rp 367.500" },
-    { amount: "3000robux", price: "Rp 441.000" },
-    { amount: "4000robux", price: "Rp 588.000" },
-    { amount: "4500robux", price: "Rp 661.500" },
-    { amount: "5000robux", price: "Rp 735.000" },
+    { amount: "80robux",    price: "Rp 14.700" },
+    { amount: "80robux 2",  price: "Rp 29.400" },
+    { amount: "80robux 3",  price: "Rp 44.100" },
+    { amount: "80robux 4",  price: "Rp 58.800" },
+    { amount: "450prem",    price: "Rp 73.500" },
+    { amount: "500robux",   price: "Rp 73.500" },
+    { amount: "1000prem",   price: "Rp 147.000" },
+    { amount: "1000robux",  price: "Rp 147.000" },
+    { amount: "1500robux",  price: "Rp 220.500" },
+    { amount: "2000robux",  price: "Rp 294.000" },
+    { amount: "2200prem",   price: "Rp 294.000" },
+    { amount: "2500robux",  price: "Rp 367.500" },
+    { amount: "3000robux",  price: "Rp 441.000" },
+    { amount: "4000robux",  price: "Rp 588.000" },
+    { amount: "4500robux",  price: "Rp 661.500" },
+    { amount: "5000robux",  price: "Rp 735.000" },
     { amount: "10000robux", price: "Rp 1.470.000" },
     { amount: "22500robux", price: "Rp 3.013.500" }
 ];
@@ -799,7 +1033,7 @@ const resellerData = [
     { displayName: "ciyAak.🪞", username: "@mriacle", color: "#06B6D4" },
     { displayName: "deuk", username: "@deukiemuws", color: "#A855F7" },
     { displayName: "Dito.", username: "@Sergeanzt", color: "#0EA5E9" },
-    { displayName: "ಇ. ₊ ⊹ 𝓢agii ^. .^₎⟆ 🍡", username: "@moocsi", color: "#8B5CF6" },
+    { displayName: "ಇ. Sagii", username: "@moocsi", color: "#8B5CF6" },
     { displayName: "fibi", username: "@fibiclouds", color: "#84CC16" },
     { displayName: "Freya🧸", username: "@madamerels", color: "#F43F5E" },
     { displayName: "Han", username: "@Jenieus", color: "#10B981" },
@@ -834,465 +1068,183 @@ const resellerData = [
     { displayName: "zal", username: "@zalgol13", color: "#3B82F6" },
     { displayName: "ZEPHYR KANG ROBUX", username: "@ZephyrKangRobux", color: "#0EA5E9" },
     { displayName: "zoya", username: "@deartwork", color: "#EC4899" },
-    { displayName: "♡! ﹏ ᕀ꒰", username: "@THOTIANA", color: "#8B5CF6" }
+    { displayName: "♡! ﹏", username: "@THOTIANA", color: "#8B5CF6" }
 ];
 
-let resellerState = { currentStep: 1, selectedCommand: null, selectedNominal: null, selectedReseller: null };
+// State
+let rsState = { command: 'proses', nominal: null, reseller: null };
 
 function initializeResellerBot() {
-    document.querySelectorAll('.command-btn').forEach(btn => {
-        btn.addEventListener('click', function() { startResellerFlow(this.getAttribute('data-command')); });
-    });
-    document.getElementById('copyResultBtn').addEventListener('click', copyResellerResult);
-    loadNominalData();
-    loadResellerData();
-}
+    // Build HTML inline instead of using old step structure
+    const section = document.querySelector('.reseller-section');
+    const existingContainer = section.querySelector('.reseller-container');
+    if (existingContainer) existingContainer.remove();
 
-function loadNominalData() {
-    const grid = document.getElementById('nominalGrid');
-    grid.innerHTML = '';
-    nominalData.forEach(nominal => {
-        const btn = document.createElement('div');
-        btn.className = 'nominal-btn';
-        btn.setAttribute('data-amount', nominal.amount);
-        btn.innerHTML = `<div class="nominal-amount">${nominal.amount}</div><div class="nominal-price">${nominal.price}</div>`;
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.nominal-btn').forEach(b => b.classList.remove('selected'));
+    const container = document.createElement('div');
+    container.className = 'reseller-container';
+    container.innerHTML = `
+        <!-- Top bar: command tabs -->
+        <div class="reseller-topbar">
+            <span class="reseller-topbar-label">Command:</span>
+            <div class="cmd-tabs">
+                <button class="cmd-tab active" data-cmd="proses">/proses</button>
+                <button class="cmd-tab" data-cmd="addsaldo">/addsaldo</button>
+                <button class="cmd-tab" data-cmd="kurangsaldo">/kurangsaldo</button>
+            </div>
+        </div>
+
+        <!-- Body: nominal + reseller -->
+        <div class="reseller-body">
+            <!-- Nominal panel (only for /proses) -->
+            <div class="reseller-panel-nominal" id="rsNominalPanel">
+                <div class="reseller-panel-header">Pilih Nominal</div>
+                <div class="nominal-chips-wrap">
+                    <div class="nominal-chips" id="rsNominalChips"></div>
+                </div>
+            </div>
+
+            <!-- Reseller panel -->
+            <div class="reseller-panel-reseller">
+                <div class="reseller-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input class="reseller-search" id="rsSearch" placeholder="Cari nama atau username reseller...">
+                </div>
+                <div class="reseller-list-wrap">
+                    <div class="reseller-list" id="rsResellerList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result bar -->
+        <div class="reseller-result-bar">
+            <div class="reseller-result-preview" id="rsPreview">Pilih nominal & reseller dulu…</div>
+            <button class="reseller-reset-btn" id="rsResetBtn"><i class="fas fa-redo"></i> Reset</button>
+            <button class="reseller-copy-btn" id="rsCopyBtn"><i class="fas fa-copy"></i> Copy Command</button>
+        </div>
+    `;
+    section.appendChild(container);
+
+    // Populate nominal chips
+    const nominalEl = document.getElementById('rsNominalChips');
+    nominalData.forEach(n => {
+        const chip = document.createElement('div');
+        chip.className = 'nominal-chip';
+        chip.setAttribute('data-amount', n.amount);
+        chip.innerHTML = `<span class="nominal-chip-name">${n.amount}</span><span class="nominal-chip-price">${n.price}</span>`;
+        chip.addEventListener('click', function() {
+            document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
-            resellerState.selectedNominal = nominal.amount;
-            setTimeout(() => showStep(3), 300);
+            rsState.nominal = n.amount;
+            updateRsResult();
         });
-        grid.appendChild(btn);
+        nominalEl.appendChild(chip);
     });
+
+    // Populate reseller list
+    renderResellerList(resellerData);
+
+    // Search
+    document.getElementById('rsSearch').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        const filtered = resellerData.filter(r =>
+            r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q)
+        );
+        renderResellerList(filtered);
+    });
+
+    // Command tabs
+    document.querySelectorAll('.cmd-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.cmd-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            rsState.command = this.getAttribute('data-cmd');
+            rsState.nominal = null;
+            document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
+            // Show/hide nominal panel
+            const panel = document.getElementById('rsNominalPanel');
+            panel.style.display = rsState.command === 'proses' ? '' : 'none';
+            updateRsResult();
+        });
+    });
+
+    // Reset
+    document.getElementById('rsResetBtn').addEventListener('click', resetReseller);
+
+    // Copy
+    document.getElementById('rsCopyBtn').addEventListener('click', copyResellerCmd);
 }
 
-function loadResellerData() {
-    const grid = document.getElementById('resellerGrid');
-    grid.innerHTML = '';
-    resellerData.forEach(reseller => {
-        const card = document.createElement('div');
-        card.className = 'reseller-card';
-        card.setAttribute('data-username', reseller.username);
-        card.innerHTML = `
-            <div class="reseller-avatar" style="background: ${reseller.color}">${reseller.displayName.trim().charAt(0)}</div>
-            <div class="reseller-info">
-                <div class="reseller-displayname">${reseller.displayName}</div>
-                <div class="reseller-username">${reseller.username}</div>
-            </div>`;
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.reseller-card').forEach(c => c.classList.remove('selected'));
+function renderResellerList(data) {
+    const list = document.getElementById('rsResellerList');
+    list.innerHTML = '';
+    data.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'reseller-item' + (rsState.reseller === r.username ? ' selected' : '');
+        item.innerHTML = `
+            <div class="reseller-item-avatar" style="background:${r.color}">${[...r.displayName.trim()][0]||'?'}</div>
+            <div class="reseller-item-info">
+                <div class="reseller-item-name">${r.displayName}</div>
+                <div class="reseller-item-username">${r.username}</div>
+            </div>
+            <i class="fas fa-check-circle reseller-item-check"></i>
+        `;
+        item.addEventListener('click', function() {
+            rsState.reseller = r.username;
+            document.querySelectorAll('.reseller-item').forEach(i => i.classList.remove('selected'));
             this.classList.add('selected');
-            resellerState.selectedReseller = reseller.username;
-            generateResellerResult();
-            showStep(4);
+            updateRsResult();
         });
-        grid.appendChild(card);
+        list.appendChild(item);
     });
 }
 
-function startResellerFlow(command) {
-    resellerState = { currentStep: 1, selectedCommand: command, selectedNominal: null, selectedReseller: null };
-    document.querySelectorAll('.nominal-btn').forEach(b => b.classList.remove('selected'));
-    document.querySelectorAll('.reseller-card').forEach(c => c.classList.remove('selected'));
-    showStep(command === 'proses' ? 2 : 3);
-}
+function updateRsResult() {
+    const preview = document.getElementById('rsPreview');
+    const copyBtn = document.getElementById('rsCopyBtn');
 
-function showStep(n) {
-    document.querySelectorAll('.reseller-step').forEach(s => s.classList.add('hidden'));
-    document.getElementById(`step${n}`).classList.remove('hidden');
-    resellerState.currentStep = n;
-}
+    const needNominal = rsState.command === 'proses';
+    const hasNominal = !needNominal || rsState.nominal;
+    const ready = hasNominal && rsState.reseller;
 
-function backToStep1() { showStep(1); }
-function backToPreviousStep() {
-    if (resellerState.currentStep === 3) showStep(resellerState.selectedCommand === 'proses' ? 2 : 1);
-}
-
-function generateResellerResult() {
-    let cmd = resellerState.selectedCommand === 'proses'
-        ? `/${resellerState.selectedCommand} ${resellerState.selectedNominal} ${resellerState.selectedReseller}`
-        : `/${resellerState.selectedCommand} ${resellerState.selectedReseller}`;
-    document.getElementById('resultPreview').textContent = cmd;
-}
-
-function copyResellerResult() {
-    const text = document.getElementById('resultPreview').textContent;
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showToast(`✅ Command dicopy: ${text}`)).catch(() => fallbackCopyTextReseller(text));
-    } else { fallbackCopyTextReseller(text); }
-}
-
-function fallbackCopyTextReseller(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy') ? showToast(`✅ Command dicopy: ${text}`) : showToast('❌ Gagal'); }
-    catch(e) { showToast('❌ Gagal'); }
-    finally { document.body.removeChild(ta); }
-}
-
-function resetResellerFlow() {
-    resellerState = { currentStep: 1, selectedCommand: null, selectedNominal: null, selectedReseller: null };
-    document.querySelectorAll('.nominal-btn').forEach(b => b.classList.remove('selected'));
-    document.querySelectorAll('.reseller-card').forEach(c => c.classList.remove('selected'));
-    showStep(1);
-}
-
-// ==================== SCROLL FUNCTIONS ====================
-function initializeScrollButtons() {
-    document.getElementById('scrollToResellerFab').addEventListener('click', () => {
-        document.querySelector('.reseller-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    document.getElementById('scrollToTopFab').addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        showToast('🏠 Kembali ke atas');
-    });
-    document.getElementById('scrollToBackupFab').addEventListener('click', () => {
-        document.querySelector('.backup-formatter-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    document.getElementById('scrollToInvoiceFab').addEventListener('click', () => {
-        document.querySelector('.invoice-maker-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
-}
-
-// ==================== BACKUP CODE FORMATTER ====================
-function initializeBackupFormatter() {
-    const backupInput = document.getElementById('backupInput');
-    const backupOutput = document.getElementById('backupOutput');
-    document.getElementById('clearBackupBtn').addEventListener('click', clearBackupFields);
-    document.getElementById('copyBackupBtn').addEventListener('click', copyBackupResult);
-    document.getElementById('autoPasteBtn').addEventListener('click', pasteFromClipboard);
-    let typingTimer;
-    backupInput.addEventListener('input', function() {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => { if (this.value.trim()) generateBackupFormat(); }, 300);
-    });
-    if (backupInput.value.trim()) generateBackupFormat();
-    backupOutput.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (this.textContent && !this.textContent.includes('code back up 1:')) copyBackupResult();
-    });
-}
-
-function extractBackupCodes(text) {
-    let cleanedText = text.trim();
-    cleanedText = cleanedText.replace(/[•·]/g, '');
-    cleanedText = cleanedText.replace(/code\s*back\s*up\s*\d+\s*:/gi, '');
-    cleanedText = cleanedText.replace(/code\s*\d+\s*:/gi, '');
-    cleanedText = cleanedText.replace(/backup\s*\d+\s*:/gi, '');
-    cleanedText = cleanedText.replace(/-/g, '');
-    const potentialCodes = cleanedText.split(/[\n\r,.;]+/);
-    const backupCodes = [];
-    for (let code of potentialCodes) {
-        code = code.trim();
-        if (code.length >= 8 && code.length <= 12 && /^[a-z0-9]+$/i.test(code)) {
-            backupCodes.push(code);
-            if (backupCodes.length >= 5) break;
-        }
-    }
-    if (backupCodes.length < 5) {
-        const directCodes = cleanedText.match(/[a-z0-9]{8,12}/gi);
-        if (directCodes) {
-            for (let i = 0; i < Math.min(5, directCodes.length); i++) {
-                if (backupCodes.length < 5 && !backupCodes.includes(directCodes[i])) backupCodes.push(directCodes[i]);
-            }
-        }
-    }
-    return backupCodes.slice(0, 5);
-}
-
-function generateBackupFormat() {
-    const inputText = document.getElementById('backupInput').value.trim();
-    const outputElement = document.getElementById('backupOutput');
-    if (!inputText) {
-        outputElement.textContent = '🔍 WAJIB DIISI 5 CODE BACKUP!!\n- code back up 1: \n- code back up 2: \n- code back up 3: \n- code back up 4: \n- code back up 5:';
-        return;
-    }
-    const backupCodes = extractBackupCodes(inputText);
-    if (!backupCodes.length) {
-        outputElement.textContent = '🔍 WAJIB DIISI 5 CODE BACKUP!!\n- code back up 1: \n- code back up 2: \n- code back up 3: \n- code back up 4: \n- code back up 5:';
-        showToast('❌ Tidak ada kode backup yang valid ditemukan');
-        return;
-    }
-    const finalCodes = [...backupCodes];
-    while (finalCodes.length < 5) finalCodes.push(backupCodes[backupCodes.length - 1]);
-    outputElement.textContent = `🔍 WAJIB DIISI 5 CODE BACKUP!!\n${finalCodes.map((c,i) => `- code back up ${i+1}: \`${c}\``).join('\n')}`;
-    showToast(backupCodes.length < 5 ? `⚠️ ${backupCodes.length} kode ditemukan` : `✅ ${backupCodes.length} kode backup diformat!`);
-}
-
-function clearBackupFields() {
-    document.getElementById('backupInput').value = '';
-    document.getElementById('backupOutput').textContent = '🔍 WAJIB DIISI 5 CODE BACKUP!!\n- code back up 1: \n- code back up 2: \n- code back up 3: \n- code back up 4: \n- code back up 5:';
-    showToast('🧹 Field dibersihkan!');
-}
-
-async function pasteFromClipboard() {
-    try {
-        const text = await navigator.clipboard.readText();
-        document.getElementById('backupInput').value = text;
-        generateBackupFormat();
-        showToast('📋 Berhasil paste dari clipboard!');
-    } catch(err) { showToast('❌ Gagal membaca clipboard'); }
-}
-
-function copyBackupResult() {
-    const outputText = document.getElementById('backupOutput').textContent;
-    if (!outputText || outputText.includes('Masukkan kode terlebih dahulu!')) { showToast('❌ Tidak ada hasil untuk dicopy'); return; }
-    const doCopy = (text) => {
-        const ta = document.createElement("textarea");
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy') ? showToast('✅ Format dicopy ke clipboard!') : showToast('❌ Gagal'); }
-        catch(e) { showToast('❌ Gagal'); } finally { document.body.removeChild(ta); }
-    };
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(outputText).then(() => {
-            showToast('✅ Format dicopy ke clipboard!');
-            const btn = document.getElementById('copyBackupBtn');
-            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy Format'; }, 2000);
-        }).catch(() => doCopy(outputText));
-    } else { doCopy(outputText); }
-}
-
-// ==================== INVOICE MAKER - FIXED ====================
-
-// Pricelist resmi Mayoblox
-const INV_PRICELIST = [
-    80, 160, 240, 320, 500,
-    1000, 1080, 1160, 1240, 1320, 1500,
-    2000, 2500, 3000, 3500, 4000, 4500, 5000,
-    5500, 6000, 6500, 7000, 7500, 8000, 8500,
-    9000, 9500, 10000,
-    450, 2200
-];
-
-// Modal
-function invOpenModal()  { document.getElementById('invModalOverlay').classList.add('open'); }
-function invCloseModal() { document.getElementById('invModalOverlay').classList.remove('open'); }
-function invCloseModalOutside(e) { if (e.target === document.getElementById('invModalOverlay')) invCloseModal(); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') invCloseModal(); });
-
-// Format robux - FIXED: exact match pricelist, baru closest
-// Support: "70k = 500 robux" → "500 Robux", "10.000 robux", "2200prem", dll
-function invFormatRobux(raw) {
-    if (!raw) return '';
-    const s = raw.trim();
-    const isPrem = /prem(?:ium)?/i.test(s);
-    // Normalize titik ribuan: 10.000 → 10000
-    const normalized = s.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
-    // Expand k/K suffix: 70k → 70000 (hanya jika standalone, misal "70k" bukan "70k0")
-    const deKiloed = normalized.replace(/\b(\d+)[kK]\b/g, (_, n) => String(parseInt(n) * 1000));
-    const nums = (deKiloed.match(/\d+/g) || []).map(Number);
-    if (!nums.length) return raw;
-    // 1. Exact match pricelist dulu — ini yang paling penting
-    //    "70k = 500 robux" → nums = [70000, 500] → 500 exact match ✓
-    for (const n of nums) {
-        if (INV_PRICELIST.includes(n)) return isPrem ? n + 'R + Premium' : n + ' Robux';
-    }
-    // 2. Closest match (fallback kalau tidak ada exact match)
-    const best = nums.reduce((a, b) => {
-        const da = Math.min(...INV_PRICELIST.map(p => Math.abs(a - p)));
-        const db = Math.min(...INV_PRICELIST.map(p => Math.abs(b - p)));
-        return da <= db ? a : b;
-    });
-    return isPrem ? best + 'R + Premium' : best + ' Robux';
-}
-
-// Extract backup codes - FIXED: bisa baca inline satu baris "code 1:xxx code 2:yyy"
-function invExtractCodes(text) {
-    if (!text) return [];
-    const codes = [];
-
-    // Strategy 1: label pattern - baca "code back up N:KODE" atau "code N:KODE"
-    // Ini bisa match inline di satu baris tanpa butuh newline
-    const labeledPattern = /(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*`?([a-z0-9]{7,14})`?/gi;
-    let m;
-    while ((m = labeledPattern.exec(text)) !== null) {
-        const c = m[1].toLowerCase();
-        if (!codes.includes(c)) {
-            codes.push(c);
-            if (codes.length >= 5) break;
-        }
-    }
-    if (codes.length >= 5) return codes.slice(0, 5);
-
-    // Strategy 2: token scan - hapus label lalu ambil token valid
-    const cleaned = text
-        .replace(/[-•·]?\s*(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*/gi, ' ')
-        .replace(/[^\w\s,;|\n]/g, ' ');
-    const tokens = cleaned.split(/[\s,;|\n\r]+/);
-    for (const tok of tokens) {
-        const t = tok.replace(/`/g,'').toLowerCase().trim();
-        if (t.length >= 7 && t.length <= 14 && /^[a-z0-9]+$/.test(t) && !codes.includes(t)) {
-            codes.push(t);
-            if (codes.length >= 5) break;
-        }
-    }
-    return codes.slice(0, 5);
-}
-
-// Check codes (modal)
-function invCheckCodes() {
-    const codes = invExtractCodes(document.getElementById('fCodes').value);
-    const found = document.getElementById('invCodesFound');
-    const none  = document.getElementById('invCodesNone');
-    if (codes.length > 0) {
-        found.textContent = '✅ ' + codes.length + ' kode ditemukan';
-        found.classList.add('show'); none.classList.remove('show');
+    if (ready) {
+        let cmd = needNominal
+            ? `/${rsState.command} ${rsState.nominal} ${rsState.reseller}`
+            : `/${rsState.command} ${rsState.reseller}`;
+        preview.textContent = cmd;
+        preview.classList.add('ready');
+        copyBtn.classList.add('ready');
     } else {
-        found.classList.remove('show'); none.classList.add('show');
+        let hint = '';
+        if (!rsState.reseller && needNominal && !rsState.nominal) hint = 'Pilih nominal & reseller dulu…';
+        else if (needNominal && !rsState.nominal) hint = 'Pilih nominal dulu…';
+        else hint = 'Pilih reseller dulu…';
+        preview.textContent = hint;
+        preview.classList.remove('ready');
+        copyBtn.classList.remove('ready');
     }
 }
 
-// Update pills
-function invUpdatePills() {
-    const robux = document.getElementById('fRobux').value.trim();
-    const user  = document.getElementById('fUser').value.trim();
-    const pass  = document.getElementById('fPass').value.trim();
-    const codes = invExtractCodes(document.getElementById('fCodes').value);
-    const setPill = (id, valId, val, good) => {
-        document.getElementById(valId).textContent = val || '–';
-        document.getElementById(id).className = 'inv-pill ' + (good ? 'ok' : 'warn');
-    };
-    setPill('invPillRobux', 'invPillRobuxVal', robux ? invFormatRobux(robux) : '', !!robux);
-    setPill('invPillUser',  'invPillUserVal',  user,  !!user);
-    setPill('invPillPass',  'invPillPassVal',  pass ? '••••' : '', !!pass);
-    setPill('invPillCodes', 'invPillCodesVal', codes.length + ' kode', codes.length >= 5);
-    document.getElementById('invParsedPreview').classList.add('show');
-}
-
-// Auto parse - FIXED: semua field
-function invAutoParseAndGenerate() {
-    const rawInput = document.getElementById('invRawPaste').value;
-    if (!rawInput.trim()) { showToast('❌ Teks kosong, paste dulu chat customer!'); return; }
-
-    // Strip timestamp chat export: [3/10/2026 5:01 PM] Name:
-    const raw = rawInput.replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g, '');
-
-    // ---- USERNAME ----
-    // Support: "USERNAME : Jokermemet1", "usn: xxx", "username: xxx"
-    const userMatch = raw.match(/(?:username|usn|user)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
-    if (userMatch) document.getElementById('fUser').value = userMatch[1].trim();
-
-    // ---- PASSWORD ----
-    // Support: "PASSWORD :makan12345", "pw: xxx", "pass: xxx"
-    const passMatch = raw.match(/(?:password|pw|pass)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
-    if (passMatch) document.getElementById('fPass').value = passMatch[1].trim();
-
-    // ---- ROBUX ----
-    // Multi-pass parser: prioritas baris dengan label + titik dua + angka
-    // Handles: "ORDER BRP: 1000 robux", "70k = 500 robux", "Rp70.000 = 500 robux", dll
-    const robuxLines = raw.split(/\n/).filter(l => !/backup|code\s*back|kode\s*(?:backup|pemulihan)/i.test(l));
-    let robuxVal = '';
-
-    // Pass 1: label + titik dua + angka — "ORDER BRP: 1000 robux", "nominal: 500"
-    const LABELED_COLON = /(?:order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*:\s*(.+)/i;
-    for (const line of robuxLines) {
-        const m = line.match(LABELED_COLON);
-        if (m && /\d/.test(m[1])) { robuxVal = m[1].trim(); break; }
-    }
-
-    // Pass 2: "robux: 1000" atau "robux : 500"
-    if (!robuxVal) {
-        for (const line of robuxLines) {
-            const m = line.match(/robux\s*:\s*(.+)/i);
-            if (m && /\d/.test(m[1])) { robuxVal = m[1].trim(); break; }
-        }
-    }
-
-    // Pass 3: "= 500 robux" atau "= 2200R + Premium" — format harga dulu baru nominal
-    if (!robuxVal) {
-        for (const line of robuxLines) {
-            const m = line.match(/=\s*(\d[\d.,]*\s*(?:r(?:obux)?|\+?\s*prem(?:ium)?)?(?:\s*\+\s*prem(?:ium)?)?)/i);
-            if (m) { robuxVal = m[1].trim(); break; }
-        }
-    }
-
-    // Pass 4: fallback — scan semua angka, exact match pricelist
-    if (!robuxVal) {
-        const cleanRaw = robuxLines.filter(l => /\d/.test(l)).join('\n');
-        const isPrem = /prem(?:ium)?/i.test(cleanRaw);
-        const normalized = cleanRaw.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
-        const allNums = (normalized.match(/\d+/g) || []).map(Number);
-        for (const n of allNums) {
-            if (INV_PRICELIST.includes(n)) { robuxVal = isPrem ? n + 'R + Premium' : String(n); break; }
-        }
-    }
-
-    if (robuxVal) document.getElementById('fRobux').value = invFormatRobux(robuxVal) || robuxVal;
-
-    // ---- BACKUP CODES ----
-    document.getElementById('fCodes').value = raw;
-    invCheckCodes();
-    invUpdatePills();
-    invGenerateInvoice();
-}
-
-// Clear
-function invClearRaw() {
-    document.getElementById('invRawPaste').value = '';
-    document.getElementById('invParsedPreview').classList.remove('show');
-    document.getElementById('invOutputBox').textContent = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
-    invLastInvoiceText = '';
-    document.getElementById('invCopyStatus').classList.remove('show');
-    showToast('🧹 Cleared!');
-}
-
-// Auto paste
-async function invDoPaste() {
-    try {
-        const text = await navigator.clipboard.readText();
-        if (!text.trim()) { showToast('❌ Clipboard kosong!'); return; }
-        document.getElementById('invRawPaste').value = text;
-        invAutoParseAndGenerate();
-        showToast('📋 Auto paste berhasil!');
-    } catch(e) {
-        showToast('❌ Gagal baca clipboard. Izinkan akses clipboard dulu.');
-    }
-}
-
-// Generate invoice
-let invLastInvoiceText = '';
-function invGenerateInvoice() {
-    const robuxRaw = document.getElementById('fRobux').value.trim();
-    const user     = document.getElementById('fUser').value.trim();
-    const pass     = document.getElementById('fPass').value.trim();
-    const codesRaw = document.getElementById('fCodes').value;
-    if (!robuxRaw && !user && !pass) { showToast('❌ Isi minimal nominal, username, atau password dulu!'); return; }
-    const robux = invFormatRobux(robuxRaw) || robuxRaw || '???';
-    const codes = invExtractCodes(codesRaw);
-    const codesPlain = [];
-    for (let i = 0; i < 5; i++) codesPlain.push(codes[i] || '???');
-    const invoice =
-        'DETAIL PESANAN KAMU\n\n' +
-        '✨ Jumlah Robux: `' + robux + '`\n' +
-        '👤 Username: `' + (user || '???') + '`\n' +
-        '🔑 Password: `' + (pass || '???') + '`\n' +
-        '🛡 Backup Code: `' + codesPlain.join(', ') + '`';
-    invLastInvoiceText = invoice;
-    const outputBox = document.getElementById('invOutputBox');
-    const escaped = invoice.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    outputBox.innerHTML = escaped.replace(/`([^`]+)`/g, '<span class="inv-code-span">`$1`</span>');
-    showToast('✅ Invoice berhasil dibuat!');
-    document.getElementById('invCopyStatus').classList.remove('show');
-}
-
-// Copy invoice
-function invCopyInvoice() {
-    if (!invLastInvoiceText) { showToast('❌ Generate invoice dulu!'); return; }
-    const doCopy = (text) => {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta);
-        document.getElementById('invCopyStatus').classList.add('show');
-        showToast('✅ Invoice dicopy! Tinggal paste ke Telegram 🎉');
+function copyResellerCmd() {
+    if (!document.getElementById('rsCopyBtn').classList.contains('ready')) return;
+    const text = document.getElementById('rsPreview').textContent;
+    const doCopy = (t) => {
+        const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        showToast(`✅ Dicopy: ${t}`);
     };
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(invLastInvoiceText)
-            .then(() => { document.getElementById('invCopyStatus').classList.add('show'); showToast('✅ Invoice dicopy! Tinggal paste ke Telegram 🎉'); })
-            .catch(() => doCopy(invLastInvoiceText));
-    } else { doCopy(invLastInvoiceText); }
+        navigator.clipboard.writeText(text).then(()=>showToast(`✅ Dicopy: ${text}`)).catch(()=>doCopy(text));
+    } else { doCopy(text); }
+}
+
+function resetReseller() {
+    rsState = { command: rsState.command, nominal: null, reseller: null };
+    document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.reseller-item').forEach(i => i.classList.remove('selected'));
+    document.getElementById('rsSearch').value = '';
+    renderResellerList(resellerData);
+    updateRsResult();
+    showToast('🔄 Reset!');
 }
 
 // ==================== ADDRESS MODAL ====================
@@ -1307,45 +1259,44 @@ function addressModalOpen() {
 function addressModalClose() { document.getElementById('addressModalOverlay').classList.remove('open'); }
 function addressModalCloseOutside(e) { if (e.target === document.getElementById('addressModalOverlay')) addressModalClose(); }
 function addressToggleKey(btn) {
-    const input = document.getElementById('addressKeyInput');
-    const isHidden = input.type === 'password';
-    input.type = isHidden ? 'text' : 'password';
-    btn.querySelector('.toggle-icon').textContent = isHidden ? '🙈' : '👁️';
+    const inp = document.getElementById('addressKeyInput');
+    const hide = inp.type === 'password';
+    inp.type = hide ? 'text' : 'password';
+    btn.querySelector('.toggle-icon').textContent = hide ? '🙈' : '👁️';
 }
 function addressCheckKey() {
     const val = document.getElementById('addressKeyInput').value.trim();
-    const errEl = document.getElementById('addressKeyError');
+    const err = document.getElementById('addressKeyError');
     if (val === 'ambatukam') {
-        errEl.textContent = '';
+        err.textContent = '';
         document.getElementById('addressKeyScreen').style.display = 'none';
         document.getElementById('addressContent').style.display = 'block';
     } else {
-        errEl.textContent = '❌ Secret key salah, coba lagi!';
+        err.textContent = '❌ Secret key salah!';
         document.getElementById('addressKeyInput').value = '';
         document.getElementById('addressKeyInput').focus();
     }
 }
 function addressCopy(text, el) {
-    const doCopy = () => {
+    const done = () => {
         el.classList.add('copied');
         el.querySelector('.addr-copy-icon').className = 'fas fa-check addr-copy-icon';
         showToast('✅ "' + text + '" dicopy!');
         setTimeout(() => { el.classList.remove('copied'); el.querySelector('.addr-copy-icon').className = 'fas fa-copy addr-copy-icon'; }, 1500);
     };
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(doCopy).catch(() => {
-            const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
-            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); doCopy();
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+            const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
         });
     } else {
-        const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); doCopy();
+        const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
     }
 }
 
-// ==================== MAIN INITIALIZATION ====================
+// ==================== MAIN INIT ====================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Take Order Tele initialized! 🚀');
     loadTemplates();
     initializeTheme();
     initializeSearch();
@@ -1354,13 +1305,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollButtons();
     initializeBackupFormatter();
 
-    // Invoice: codes textarea listener
+    // Invoice listeners
     document.getElementById('fCodes').addEventListener('input', invCheckCodes);
-
-    // Invoice: auto generate on paste/input
-    (function() {
+    (() => {
         const ta = document.getElementById('invRawPaste');
-        let timer = null;
+        let timer;
         ta.addEventListener('input', function() {
             clearTimeout(timer);
             timer = setTimeout(() => { if (ta.value.trim().length > 20) invAutoParseAndGenerate(); }, 600);
@@ -1371,10 +1320,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     })();
 
+    // Nav listeners
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('showStats').addEventListener('click', showStats);
+    document.getElementById('toggleAllBtn').addEventListener('click', toggleAllTemplates);
+
     document.querySelectorAll('.quick-btn').forEach(btn => {
         btn.addEventListener('click', function() { handleQuickAction(this.getAttribute('data-template')); });
     });
+
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -1382,7 +1336,4 @@ document.addEventListener('DOMContentLoaded', function() {
             filterTemplatesByCategory(this.getAttribute('data-category'));
         });
     });
-    document.getElementById('showStats').addEventListener('click', showStats);
-    document.getElementById('toggleAllBtn').addEventListener('click', toggleAllTemplates);
-    document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 });
