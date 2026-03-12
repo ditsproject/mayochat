@@ -77,44 +77,34 @@ body {
 }
 
 .logo-link {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     transition: all 0.3s;
-    flex-shrink: 0;
 }
 
 .logo-link i {
-    font-size: 1rem;
-    color: white;
+    font-size: 2rem;
+    color: var(--pink);
+    transition: all 0.3s;
 }
 
-.logo-link:hover {
-    transform: rotate(-8deg) scale(1.1);
-    box-shadow: 0 4px 16px rgba(240,98,146,0.4);
+.logo-link:hover i {
+    color: var(--pink-dark);
+    transform: scale(1.1) rotate(-5deg);
 }
 
 .logo h1 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
 }
 
 .tagline {
-    font-size: 0.72rem;
+    font-size: 0.875rem;
     color: var(--muted);
-    margin-top: 0.1rem;
-    margin-left: 44px;
-    letter-spacing: 0.02em;
+    margin-top: 0.25rem;
 }
 
 .nav-controls {
@@ -1189,8 +1179,8 @@ body.dark .toast { background: #2d1b26; }
 
 .fab-home      { bottom: 18rem; }
 .fab-backup    { bottom: 14rem; }
-.fab-reseller  { bottom: 10rem; }
-.fab-invoice   { bottom: 6rem; }
+.fab-invoice   { bottom: 10rem; }
+.fab-reseller  { bottom: 6rem; }
 #quickCopyFab  { bottom: 2rem; }
 
 .fab::after {
@@ -1542,8 +1532,8 @@ body.dark .loading-logo { color: rgba(255,255,255,0.08); }
     .fab { width: 48px; height: 48px; font-size: 1rem; right: 1rem; }
     .fab-home      { bottom: 17rem; }
     .fab-backup    { bottom: 13rem; }
-    .fab-reseller  { bottom: 9rem; }
-    .fab-invoice   { bottom: 5rem; }
+    .fab-invoice   { bottom: 9rem; }
+    .fab-reseller  { bottom: 5rem; }
     #quickCopyFab  { bottom: 1.5rem; }
 }
 

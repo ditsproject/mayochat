@@ -837,7 +837,8 @@ function copyBackupResult() {
     } else { doCopy(text); }
 }
 
-// ==================== INVOICE MAKER ====================
+// ==================== INVOICE MAKER (SMART - NO API) ====================
+
 const INV_PRICELIST = [
     80, 160, 240, 320, 500, 1000, 1080, 1160, 1240, 1320, 1500,
     2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500,
@@ -849,11 +850,14 @@ function invCloseModal() { document.getElementById('invModalOverlay').classList.
 function invCloseModalOutside(e) { if (e.target === document.getElementById('invModalOverlay')) invCloseModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { invCloseModal(); addressModalClose(); } });
 
+// ── FORMAT ROBUX ──────────────────────────────────────────────────────────
 function invFormatRobux(raw) {
     if (!raw) return '';
     const s = raw.trim();
     const isPrem = /prem(?:ium)?/i.test(s);
-    const normalized = s.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+    // FIX: normalisasi "80robux" → "80", "80r" → "80"
+    const stripped = s.replace(/\s*r(?:obux)?\b/gi, '').trim();
+    const normalized = stripped.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
     const deK = normalized.replace(/\b(\d+)[kK]\b/g, (_,n) => String(parseInt(n)*1000));
     const nums = (deK.match(/\d+/g)||[]).map(Number);
     if (!nums.length) return raw;
@@ -868,35 +872,167 @@ function invFormatRobux(raw) {
     return isPrem ? best+'R + Premium' : best+' Robux';
 }
 
+// ── SKIP WORDS ────────────────────────────────────────────────────────────
+const INV_SKIP_WORDS = new Set([
+    'username','password','pasword','backup','pemulihan','roblox','robux',
+    'harap','diisi','dengan','jelas','minimal','tuliskan','supaya','meski',
+    'offline','tetap','bisa','kami','kirim','boleh','sambil','dimainkan',
+    'karena','tidak','mengganggu','pengisian','wajib','lengkap','tulis',
+    'order','prem','premium','nominal','jumlah','beli','login','akun',
+    'kode','code','back','backup','verif','email','langkah','aktifkan',
+    'masuk','keluar','klik','buka','settings','security','scroll','sisa',
+    'generate','create','buat','kirim','mimin','admin','proses','antrian',
+    'lainnya','other','all','semua','data','info','step','cara','isi',
+    'foto','bukti','payment','berupa','format','topup','vilog','via',
+    'robuxnya','saldo','total','harga','bayar','transfer','konfirmasi'
+]);
+
+// FIX: sekarang pure huruf boleh jadi kode (contoh: ynaysvedm)
+// Yang di-skip hanya kata bahasa umum (pure huruf DAN panjang > 10)
+function invIsLikelyCode(token) {
+    const t = token.toLowerCase().trim();
+    if (t.length < 7 || t.length > 14) return false;
+    if (!/^[a-z0-9]+$/.test(t)) return false;
+    if (INV_SKIP_WORDS.has(t)) return false;
+    if (/^[a-z]+$/.test(t) && t.length > 10) return false; // kata panjang pure huruf → skip
+    return true;
+}
+
+// ── EXTRACT BACKUP CODES ──────────────────────────────────────────────────
 function invExtractCodes(text) {
     if (!text) return [];
     const codes = [];
-    const lp = /(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*`?([a-z0-9]{7,14})`?/gi;
-    let m;
-    while ((m = lp.exec(text)) !== null) {
-        const c = m[1].toLowerCase();
-        if (!codes.includes(c)) { codes.push(c); if (codes.length>=5) break; }
-    }
-    if (codes.length>=5) return codes.slice(0,5);
-    const cleaned = text
-        .replace(/[-•·]?\s*(?:code\s*back\s*up|code|kode\s*(?:backup|pemulihan)?)\s*\d+\s*:?\s*/gi,' ')
-        .replace(/[^\w\s,;|\n]/g,' ');
-    const tokens = cleaned.split(/[\s,;|\n\r]+/);
-    for (const tok of tokens) {
-        const t = tok.replace(/`/g,'').toLowerCase().trim();
-        if (t.length>=7 && t.length<=14 && /^[a-z0-9]+$/.test(t) && !codes.includes(t)) {
-            codes.push(t); if (codes.length>=5) break;
+    const lines = text.split(/\n/);
+
+    // Strategi 1: cari label backup code, ambil kode dari baris itu + baris berikutnya
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const isLabel = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan))\s*\d*\s*:?/i.test(line);
+        if (!isLabel) continue;
+
+        const chunk = [line];
+        for (let j = i+1; j <= i+2 && j < lines.length; j++) {
+            const next = lines[j].trim();
+            if (/(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan)|username|password|order|bukti|payment)/i.test(next)
+                && !invIsLikelyCode(next.replace(/[^a-z0-9]/gi, ''))) break;
+            chunk.push(next);
+        }
+
+        const chunkText = chunk.join(' ')
+            .replace(/(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan)?)\s*\d*\s*:?/gi, ' ');
+        for (const tok of chunkText.split(/[\s,;|`\-]+/)) {
+            const t = tok.trim().toLowerCase();
+            if (invIsLikelyCode(t) && !codes.includes(t)) {
+                codes.push(t);
+                if (codes.length >= 5) return codes;
+            }
         }
     }
-    return codes.slice(0,5);
+
+    if (codes.length >= 5) return codes.slice(0, 5);
+
+    // Strategi 2: scan seluruh teks, filter baris yang jelas bukan kode
+    const filteredLines = lines.filter(l =>
+        !/(?:username|usn|user|password|pasword|pw|pass|order|nominal|jumlah|sisa|bukti|payment|format)\s*[:\-–(]/i.test(l)
+    );
+    for (const tok of filteredLines.join('\n').replace(/[^\w\s\n]/g, ' ').split(/[\s\n\r]+/)) {
+        const t = tok.trim().toLowerCase();
+        if (invIsLikelyCode(t) && !codes.includes(t)) {
+            codes.push(t);
+            if (codes.length >= 5) break;
+        }
+    }
+
+    return codes.slice(0, 5);
 }
 
+// ── EXTRACT USERNAME ──────────────────────────────────────────────────────
+function invExtractUsername(text) {
+    const patterns = [
+        /(?:🫧\s*)?username\s*(?:\(@\)\s*)?[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /(?:🫧\s*)?usn\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /(?:🫧\s*)?user\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /👤\s*([^\n\r🫧🌸✨👤🔑🛡]+)/,
+    ];
+    for (const pat of patterns) {
+        const m = text.match(pat);
+        if (m) {
+            const val = m[1].trim()
+                .replace(/^[🫧🌸✨👤🔑🛡\s@*_]+|[🫧🌸✨👤🔑🛡\s@*_]+$/g, '')
+                .split(/\s+/)[0]; // username = satu kata
+            if (val && val.length >= 2) return val;
+        }
+    }
+    return '';
+}
+
+// ── EXTRACT PASSWORD ──────────────────────────────────────────────────────
+function invExtractPassword(text) {
+    // FIX: baca sampai akhir baris, termasuk spasi (password bisa multi-kata)
+    const patterns = [
+        /(?:🫧\s*)?password\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /(?:🫧\s*)?pasword\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /(?:🫧\s*)?pw\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /(?:🫧\s*)?pass\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
+        /🔑\s*([^\n\r🫧🌸✨👤🔑🛡]+)/,
+    ];
+    for (const pat of patterns) {
+        const m = text.match(pat);
+        if (m) {
+            const val = m[1].trim()
+                .replace(/^[🫧🌸✨👤🔑🛡\s*_]+|[🫧🌸✨👤🔑🛡\s*_]+$/g, '')
+                .trim();
+            if (val && val.length >= 1) return val;
+        }
+    }
+    return '';
+}
+
+// ── EXTRACT ROBUX ─────────────────────────────────────────────────────────
+function invExtractRobux(text) {
+    // Hapus baris backup/sisa robux supaya angkanya ga ikut terbaca
+    const safeLines = text.split('\n').filter(l =>
+        !/(?:backup|code\s*back|kode\s*(?:backup|pemulihan)|sisa\s*robux)/i.test(l)
+    );
+    const safeText = safeLines.join('\n');
+
+    // Normalisasi "80robux" → "80", "80r" → "80"
+    const normalized = safeText
+        .replace(/(\d+)\s*r(?:obux)?\b/gi, '$1')
+        .replace(/\b(\d+)[kK]\b/g, (_,n) => String(parseInt(n)*1000));
+
+    // Cari di baris yang ada label order/jumlah/nominal
+    const orderPats = [
+        /(?:order\s*robux|order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*[:\-–]?\s*([^\n\r]+)/i,
+    ];
+    for (const pat of orderPats) {
+        const m = normalized.match(pat);
+        if (m && /\d/.test(m[1])) {
+            const nums = (m[1].match(/\d+/g)||[]).map(Number);
+            for (const n of nums) if (INV_PRICELIST.includes(n)) return String(n);
+            const valid = nums.filter(n => n >= 80 && n <= 100000);
+            if (valid.length) return String(valid[0]);
+        }
+    }
+
+    // Fallback: cari semua angka yang cocok pricelist
+    const nums = (normalized.match(/\b\d+\b/g)||[]).map(Number);
+    for (const n of nums) if (INV_PRICELIST.includes(n)) return String(n);
+
+    return '';
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────
 function invCheckCodes() {
     const codes = invExtractCodes(document.getElementById('fCodes').value);
     const found = document.getElementById('invCodesFound');
     const none  = document.getElementById('invCodesNone');
-    if (codes.length>0) { found.textContent='✅ '+codes.length+' kode ditemukan'; found.classList.add('show'); none.classList.remove('show'); }
-    else { found.classList.remove('show'); none.classList.add('show'); }
+    if (codes.length > 0) {
+        found.textContent = '✅ ' + codes.length + ' kode ditemukan';
+        found.classList.add('show'); none.classList.remove('show');
+    } else {
+        found.classList.remove('show'); none.classList.add('show');
+    }
 }
 
 function invUpdatePills() {
@@ -904,52 +1040,65 @@ function invUpdatePills() {
     const user  = document.getElementById('fUser').value.trim();
     const pass  = document.getElementById('fPass').value.trim();
     const codes = invExtractCodes(document.getElementById('fCodes').value);
-    const sp = (id,vid,val,ok) => {
-        document.getElementById(vid).textContent = val||'–';
-        document.getElementById(id).className = 'inv-pill '+(ok?'ok':'warn');
+    const sp = (id, vid, val, ok) => {
+        document.getElementById(vid).textContent = val || '–';
+        document.getElementById(id).className = 'inv-pill ' + (ok ? 'ok' : 'warn');
     };
-    sp('invPillRobux','invPillRobuxVal', robux?invFormatRobux(robux):'', !!robux);
-    sp('invPillUser','invPillUserVal', user, !!user);
-    sp('invPillPass','invPillPassVal', pass?'••••':'', !!pass);
-    sp('invPillCodes','invPillCodesVal', codes.length+' kode', codes.length>=5);
+    sp('invPillRobux', 'invPillRobuxVal', robux ? invFormatRobux(robux) : '', !!robux);
+    sp('invPillUser',  'invPillUserVal',  user,  !!user);
+    sp('invPillPass',  'invPillPassVal',  pass ? '••••' : '', !!pass);
+    sp('invPillCodes', 'invPillCodesVal', codes.length + ' kode', codes.length >= 5);
     document.getElementById('invParsedPreview').classList.add('show');
 }
 
+// ── AUTO PARSE & GENERATE ─────────────────────────────────────────────────
 function invAutoParseAndGenerate() {
     const rawInput = document.getElementById('invRawPaste').value;
     if (!rawInput.trim()) { showToast('❌ Teks kosong!'); return; }
-    const raw = rawInput.replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g,'');
-    const um = raw.match(/(?:username|usn|user)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
-    if (um) document.getElementById('fUser').value = um[1].trim();
-    const pm = raw.match(/(?:password|pw|pass)\s*[:\-–]\s*([^\n\r,🫧🌸✨👤🔑🛡\s]+)/i);
-    if (pm) document.getElementById('fPass').value = pm[1].trim();
-    const robuxLines = raw.split(/\n/).filter(l => !/backup|code\s*back|kode\s*(?:backup|pemulihan)/i.test(l));
-    let rv = '';
-    const LC = /(?:order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*:\s*(.+)/i;
-    for (const l of robuxLines) { const m=l.match(LC); if(m&&/\d/.test(m[1])){ rv=m[1].trim(); break; } }
-    if (!rv) for (const l of robuxLines) { const m=l.match(/robux\s*:\s*(.+)/i); if(m&&/\d/.test(m[1])){ rv=m[1].trim(); break; } }
-    if (!rv) for (const l of robuxLines) { const m=l.match(/=\s*(\d[\d.,]*\s*(?:r(?:obux)?|\+?\s*prem(?:ium)?)?(?:\s*\+\s*prem(?:ium)?)?)/i); if(m){ rv=m[1].trim(); break; } }
-    if (!rv) {
-        const clean2 = robuxLines.filter(l=>/\d/.test(l)).join('\n');
-        const isPrem = /prem(?:ium)?/i.test(clean2);
-        const norm2 = clean2.replace(/(\d)[.,](\d{3})(?!\d)/g,'$1$2');
-        const allN = (norm2.match(/\d+/g)||[]).map(Number);
-        for (const n of allN) { if(INV_PRICELIST.includes(n)){ rv=isPrem?n+'R + Premium':String(n); break; } }
-    }
-    if (rv) document.getElementById('fRobux').value = invFormatRobux(rv)||rv;
-    document.getElementById('fCodes').value = raw;
-    invCheckCodes(); invUpdatePills(); invGenerateInvoice();
+
+    // FIX UTAMA: selalu clear semua field dulu sebelum isi data baru
+    // Ini yang bikin data lama nyangkut ke invoice berikutnya
+    document.getElementById('fUser').value  = '';
+    document.getElementById('fPass').value  = '';
+    document.getElementById('fRobux').value = '';
+    document.getElementById('fCodes').value = '';
+
+    // Hapus timestamp chat
+    const cleaned = rawInput
+        .replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g, '')
+        .trim();
+
+    const username = invExtractUsername(cleaned);
+    const password = invExtractPassword(cleaned);
+    const robuxRaw = invExtractRobux(cleaned);
+
+    if (username) document.getElementById('fUser').value  = username;
+    if (password) document.getElementById('fPass').value  = password;
+    if (robuxRaw) document.getElementById('fRobux').value = invFormatRobux(robuxRaw) || robuxRaw;
+
+    document.getElementById('fCodes').value = cleaned;
+
+    invCheckCodes();
+    invUpdatePills();
+    invGenerateInvoice();
 }
 
+// ── CLEAR ─────────────────────────────────────────────────────────────────
 function invClearRaw() {
     document.getElementById('invRawPaste').value = '';
+    document.getElementById('fUser').value  = '';
+    document.getElementById('fPass').value  = '';
+    document.getElementById('fRobux').value = '';
+    document.getElementById('fCodes').value = '';
     document.getElementById('invParsedPreview').classList.remove('show');
-    document.getElementById('invOutputBox').textContent = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
+    document.getElementById('invOutputBox').textContent =
+        'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
     invLastInvoiceText = '';
     document.getElementById('invCopyStatus').classList.remove('show');
     showToast('🧹 Cleared!');
 }
 
+// ── PASTE ─────────────────────────────────────────────────────────────────
 async function invDoPaste() {
     try {
         const text = await navigator.clipboard.readText();
@@ -960,38 +1109,57 @@ async function invDoPaste() {
     } catch { showToast('❌ Gagal baca clipboard. Izinkan akses dulu.'); }
 }
 
+// ── GENERATE INVOICE ──────────────────────────────────────────────────────
 let invLastInvoiceText = '';
 function invGenerateInvoice() {
     const robuxRaw = document.getElementById('fRobux').value.trim();
     const user     = document.getElementById('fUser').value.trim();
     const pass     = document.getElementById('fPass').value.trim();
     const codesRaw = document.getElementById('fCodes').value;
+
     if (!robuxRaw && !user && !pass) { showToast('❌ Isi dulu data customernya!'); return; }
-    const robux = invFormatRobux(robuxRaw)||robuxRaw||'???';
+
+    const robux = invFormatRobux(robuxRaw) || robuxRaw || '???';
     const codes = invExtractCodes(codesRaw);
-    const cp = []; for (let i=0;i<5;i++) cp.push(codes[i]||'???');
-    const invoice = 'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: `'+robux+'`\n👤 Username: `'+(user||'???')+'`\n🔑 Password: `'+(pass||'???')+'`\n🛡 Backup Code: `'+cp.join(', ')+'`';
+    const cp = [];
+    for (let i = 0; i < 5; i++) cp.push(codes[i] || '???');
+
+    const invoice =
+        'DETAIL PESANAN KAMU\n\n' +
+        '✨ Jumlah Robux: `' + robux + '`\n' +
+        '👤 Username: `' + (user || '???') + '`\n' +
+        '🔑 Password: `' + (pass || '???') + '`\n' +
+        '🛡 Backup Code: `' + cp.join(', ') + '`';
+
     invLastInvoiceText = invoice;
     const box = document.getElementById('invOutputBox');
     const esc = invoice.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    box.innerHTML = esc.replace(/`([^`]+)`/g,'<span class="inv-code-span">`$1`</span>');
+    box.innerHTML = esc.replace(/`([^`]+)`/g, '<span class="inv-code-span">`$1`</span>');
     showToast('✅ Invoice dibuat!');
     document.getElementById('invCopyStatus').classList.remove('show');
 }
 
+// ── COPY INVOICE ──────────────────────────────────────────────────────────
 function invCopyInvoice() {
     if (!invLastInvoiceText) { showToast('❌ Generate invoice dulu!'); return; }
     const doCopy = (t) => {
-        const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;left:-9999px';
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        const ta = document.createElement('textarea');
+        ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
         document.getElementById('invCopyStatus').classList.add('show');
         showToast('✅ Invoice dicopy! Paste ke Telegram 🎉');
     };
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(invLastInvoiceText)
-            .then(()=>{ document.getElementById('invCopyStatus').classList.add('show'); showToast('✅ Invoice dicopy! Paste ke Telegram 🎉'); })
-            .catch(()=>doCopy(invLastInvoiceText));
-    } else { doCopy(invLastInvoiceText); }
+            .then(() => {
+                document.getElementById('invCopyStatus').classList.add('show');
+                showToast('✅ Invoice dicopy! Paste ke Telegram 🎉');
+            })
+            .catch(() => doCopy(invLastInvoiceText));
+    } else {
+        doCopy(invLastInvoiceText);
+    }
 }
 
 // ==================== RESELLER — NEW DESIGN ====================
