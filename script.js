@@ -554,7 +554,6 @@ function loadTemplates() {
     const grid = document.getElementById('templatesGrid');
     grid.innerHTML = '';
     document.getElementById('templateCount').textContent = templatesData.length;
-
     templatesData.forEach(t => {
         const used = localStorage.getItem(`template-${t.id}-used`) || 0;
         const card = document.createElement('div');
@@ -767,27 +766,57 @@ function initializeBackupFormatter() {
 }
 
 function extractBackupCodes(text) {
-    let clean = text.trim()
-        .replace(/[•·]/g, '')
-        .replace(/code\s*back\s*up\s*\d+\s*:/gi, '')
-        .replace(/code\s*\d+\s*:/gi, '')
-        .replace(/backup\s*\d+\s*:/gi, '')
-        .replace(/-/g, '');
+    if (!text) return [];
     const codes = [];
-    const parts = clean.split(/[\n\r,.;]+/);
-    for (let c of parts) {
-        c = c.trim();
-        if (c.length >= 8 && c.length <= 12 && /^[a-z0-9]+$/i.test(c)) {
-            codes.push(c);
-            if (codes.length >= 5) break;
+    const lines = text.split(/\n/);
+
+    const isCode = (s) => {
+        const t = s.toLowerCase().trim().replace(/[`'"]/g, '');
+        if (t.length !== 9) return false;
+        if (!/^[a-z0-9]+$/.test(t)) return false;
+        if (/^\d+$/.test(t)) return false;
+        if (INV_WORD_BLOCK.has(t)) return false;
+        return true;
+    };
+
+    const addCode = (s) => {
+        const t = s.toLowerCase().trim().replace(/[`'"]/g, '');
+        if (isCode(t) && !codes.includes(t)) codes.push(t);
+        return codes.length >= 5;
+    };
+
+    // Strategi 1: label "code back up X:"
+    const labelPat = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan|cadangan)|bc)\s*\d*\s*[:\-=]?\s*/i;
+    for (const line of lines) {
+        if (!labelPat.test(line)) continue;
+        const val = line.replace(labelPat, '').replace(/[-•\s`'"]/g, '').trim();
+        if (addCode(val) && codes.length >= 5) return codes;
+    }
+    if (codes.length >= 5) return codes;
+
+    // Strategi 2: "1. kode" atau "1) kode"
+    for (const line of lines) {
+        const m = line.match(/^\s*\d+[.)]\s*([a-z0-9]{9})\s*$/i);
+        if (m && addCode(m[1]) && codes.length >= 5) return codes;
+    }
+    if (codes.length >= 5) return codes;
+
+    // Strategi 3: satu token per baris
+    for (const line of lines) {
+        const t = line.trim().replace(/^[-•·*\s]+/, '').trim();
+        if (/^[a-z0-9]{9}$/i.test(t) && addCode(t) && codes.length >= 5) return codes;
+    }
+    if (codes.length >= 5) return codes;
+
+    // Strategi 4: kode dalam satu baris dipisah spasi (skip baris instruksi)
+    for (const line of lines) {
+        const isInstruction = /(?:cara|klik|login|akses|pilih|salin|kirim|jangan|supaya|proses|wajib|minimal|backup|roblox|generate|settings|security|transaksi|silahkan|silakan|menggunakan)\b/i.test(line);
+        if (isInstruction) continue;
+        for (const tok of line.split(/[\s,;|]+/)) {
+            if (addCode(tok) && codes.length >= 5) return codes;
         }
     }
-    if (codes.length < 5) {
-        const direct = clean.match(/[a-z0-9]{8,12}/gi);
-        if (direct) for (let i = 0; i < direct.length && codes.length < 5; i++) {
-            if (!codes.includes(direct[i])) codes.push(direct[i]);
-        }
-    }
+
     return codes.slice(0, 5);
 }
 
@@ -837,7 +866,7 @@ function copyBackupResult() {
     } else { doCopy(text); }
 }
 
-// ==================== INVOICE MAKER (SMART - NO API) ====================
+// ==================== INVOICE MAKER ====================
 
 const INV_PRICELIST = [
     80, 160, 240, 320, 500, 1000, 1080, 1160, 1240, 1320, 1500,
@@ -845,184 +874,235 @@ const INV_PRICELIST = [
     7000, 7500, 8000, 8500, 9000, 9500, 10000, 450, 2200
 ];
 
+// Kata 9 huruf dari template yang bisa nyasar jadi kode backup
+const INV_WORD_BLOCK = new Set([
+    "dimainkan","pemulihan","pengisian","prosesnya","transaksi"
+]);
+
 function invOpenModal()  { document.getElementById('invModalOverlay').classList.add('open'); }
 function invCloseModal() { document.getElementById('invModalOverlay').classList.remove('open'); }
 function invCloseModalOutside(e) { if (e.target === document.getElementById('invModalOverlay')) invCloseModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { invCloseModal(); addressModalClose(); } });
 
-// ── FORMAT ROBUX ──────────────────────────────────────────────────────────
+// Cek apakah token adalah backup code Roblox (selalu tepat 9 karakter)
+function invIsLikelyCode(token) {
+    const t = token.toLowerCase().trim().replace(/[`'"]/g, '');
+    if (t.length !== 9) return false;
+    if (!/^[a-z0-9]+$/.test(t)) return false;
+    if (/^\d+$/.test(t)) return false;
+    if (INV_WORD_BLOCK.has(t)) return false;
+    return true;
+}
+
+// Format hasil robux: "1000prem" → "1000R + Premium", "1500" → "1500 Robux"
 function invFormatRobux(raw) {
     if (!raw) return '';
     const s = raw.trim();
     const isPrem = /prem(?:ium)?/i.test(s);
-    // FIX: normalisasi "80robux" → "80", "80r" → "80"
-    const stripped = s.replace(/\s*r(?:obux)?\b/gi, '').trim();
-    const normalized = stripped.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
-    const deK = normalized.replace(/\b(\d+)[kK]\b/g, (_,n) => String(parseInt(n)*1000));
-    const nums = (deK.match(/\d+/g)||[]).map(Number);
-    if (!nums.length) return raw;
-    for (const n of nums) {
-        if (INV_PRICELIST.includes(n)) return isPrem ? n+'R + Premium' : n+' Robux';
+
+    let work = s
+        .replace(/r(?:ob(?:ux|ix)?|bx?)\b/gi, '')
+        .replace(/prem(?:ium)?\b/gi, '')
+        .replace(/[+&]/g, ' ')
+        .trim();
+
+    work = work.replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2');
+    work = work.replace(/\b(\d+)[kK]\b/g, (_, n) => String(parseInt(n) * 1000));
+
+    const nums = (work.match(/\d+/g) || []).map(Number).filter(n => n > 0);
+    if (!nums.length) return isPrem ? '1000R + Premium' : '';
+
+    if (isPrem) {
+        const PREM_PACKS = [450, 1000, 2200];
+        for (const n of nums) if (PREM_PACKS.includes(n)) return n + 'R + Premium';
+        if (nums.includes(2000)) return '2200R + Premium';
+        const best = nums.filter(n => n >= 100);
+        if (best.length) {
+            const closest = PREM_PACKS.reduce((a, b) =>
+                Math.abs(a - best[0]) <= Math.abs(b - best[0]) ? a : b);
+            return closest + 'R + Premium';
+        }
+        return '1000R + Premium';
     }
-    const best = nums.reduce((a,b) => {
-        const da = Math.min(...INV_PRICELIST.map(p=>Math.abs(a-p)));
-        const db = Math.min(...INV_PRICELIST.map(p=>Math.abs(b-p)));
-        return da<=db?a:b;
+
+    for (const n of nums) if (INV_PRICELIST.includes(n)) return n + ' Robux';
+
+    const best = nums.reduce((a, b) => {
+        const da = Math.min(...INV_PRICELIST.map(p => Math.abs(a - p)));
+        const db = Math.min(...INV_PRICELIST.map(p => Math.abs(b - p)));
+        return da <= db ? a : b;
     });
-    return isPrem ? best+'R + Premium' : best+' Robux';
+    return best + ' Robux';
 }
 
-// ── SKIP WORDS ────────────────────────────────────────────────────────────
-const INV_SKIP_WORDS = new Set([
-    'username','password','pasword','backup','pemulihan','roblox','robux',
-    'harap','diisi','dengan','jelas','minimal','tuliskan','supaya','meski',
-    'offline','tetap','bisa','kami','kirim','boleh','sambil','dimainkan',
-    'karena','tidak','mengganggu','pengisian','wajib','lengkap','tulis',
-    'order','prem','premium','nominal','jumlah','beli','login','akun',
-    'kode','code','back','backup','verif','email','langkah','aktifkan',
-    'masuk','keluar','klik','buka','settings','security','scroll','sisa',
-    'generate','create','buat','kirim','mimin','admin','proses','antrian',
-    'lainnya','other','all','semua','data','info','step','cara','isi',
-    'foto','bukti','payment','berupa','format','topup','vilog','via',
-    'robuxnya','saldo','total','harga','bayar','transfer','konfirmasi'
-]);
+// Extract username dari teks customer
+function invExtractUsername(text) {
+    const labelPat =
+        /(?:🫧\s*)?(?:username|user\s*name|roblox\s*(?:id|username|user)|nama\s*akun|akun|usn|usr|user|id)\s*(?:\(@\)\s*)?[:\-–=]\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/gi;
+    const emojiPat = /👤\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/;
 
-// FIX: sekarang pure huruf boleh jadi kode (contoh: ynaysvedm)
-// Yang di-skip hanya kata bahasa umum (pure huruf DAN panjang > 10)
-function invIsLikelyCode(token) {
-    const t = token.toLowerCase().trim();
-    if (t.length < 7 || t.length > 14) return false;
-    if (!/^[a-z0-9]+$/.test(t)) return false;
-    if (INV_SKIP_WORDS.has(t)) return false;
-    if (/^[a-z]+$/.test(t) && t.length > 10) return false; // kata panjang pure huruf → skip
-    return true;
+    const tryExtract = (m1) => {
+        if (!m1) return '';
+        return m1.trim()
+            .replace(/^[🫧🌸✨👤🔑🛡\s@*_]+|[🫧🌸✨👤🔑🛡\s@*_]+$/g, '')
+            .split(/\s+/)[0].trim();
+    };
+
+    const em = text.match(emojiPat);
+    if (em) { const val = tryExtract(em[1]); if (val && val.length >= 2) return val; }
+
+    let m;
+    labelPat.lastIndex = 0;
+    while ((m = labelPat.exec(text)) !== null) {
+        const val = tryExtract(m[1]);
+        if (val && val.length >= 2) return val;
+    }
+    return '';
 }
 
-// ── EXTRACT BACKUP CODES ──────────────────────────────────────────────────
+// Extract password dari teks customer
+function invExtractPassword(text) {
+    const labelPat =
+        /(?:🫧\s*)?(?:password|pasword|pass\s*word|kata\s*sandi|kunci|sandi|pass|pw|pin)\s*[:\-–=]\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/gi;
+    const emojiPat = /🔑\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/;
+
+    const tryExtract = (m1) => {
+        if (!m1) return '';
+        return m1.trim().replace(/^[🫧🌸✨👤🔑🛡\s*_]+|[🫧🌸✨👤🔑🛡\s*_]+$/g, '').trim();
+    };
+
+    const em = text.match(emojiPat);
+    if (em) { const val = tryExtract(em[1]); if (val && val.length >= 1) return val; }
+
+    let m;
+    labelPat.lastIndex = 0;
+    while ((m = labelPat.exec(text)) !== null) {
+        const val = tryExtract(m[1]);
+        if (val && val.length >= 1) return val;
+    }
+    return '';
+}
+
+// Extract jumlah robux dari teks customer
+function invExtractRobux(text) {
+    const safeLines = text.split('\n').filter(l =>
+        !/(?:backup|code\s*back|kode\s*(?:backup|bc|bekap|pemulihan|cadangan)|sisa\s*rob)/i.test(l)
+    );
+    const safeText = safeLines.join('\n');
+
+    const orderLines = safeLines.filter(l =>
+        /(?:order|beli|jumlah|nominal|topup|mau|pengen|butuh|request)/i.test(l) ||
+        /(?:\d\s*r?\s*(?:\+\s*)?prem|prem\b.*\d|\d+\s*prem)/i.test(l)  // "1000r prem", "1000prem", "prem 1000"
+    );
+    const isPrem = /prem(?:ium)?/i.test(orderLines.join('\n'));
+
+    const normalized = safeText
+        .replace(/(\d+)\s*r(?:ob(?:ux|ix)?|bx?)?\b/gi, '$1')
+        .replace(/(\d)[.,](\d{3})(?!\d)/g, '$1$2')
+        .replace(/\b(\d+)[kK]\b/g, (_, n) => String(parseInt(n) * 1000));
+
+    const orderPat = /(?:order(?:\s*(?:brp|brap|berapa|robux|rbx|rb))?|top\s*up|topup|beli|jumlah|nominal|mau(?:\s*beli)?|pengen?(?:\s*beli)?|butuh|request)\s*[:\-–=]?\s*([^\n\r]+)/gi;
+
+    let m;
+    orderPat.lastIndex = 0;
+    while ((m = orderPat.exec(normalized)) !== null) {
+        if (!/\d/.test(m[1])) continue;
+        const nums = (m[1].match(/\d+/g) || []).map(Number).filter(n => n >= 80);
+        if (isPrem) {
+            const PREM_PACKS = [450, 1000, 2200];
+            for (const n of nums) if (PREM_PACKS.includes(n)) return n + 'prem';
+            if (nums.includes(2000)) return '2200prem';
+            if (nums.length) {
+                const closest = PREM_PACKS.reduce((a, b) =>
+                    Math.abs(a - nums[0]) <= Math.abs(b - nums[0]) ? a : b);
+                return closest + 'prem';
+            }
+            return '1000prem';
+        } else {
+            for (const n of nums) if (INV_PRICELIST.includes(n)) return String(n);
+        }
+    }
+
+    const allNums = (normalized.match(/\b\d+\b/g) || []).map(Number).filter(n => n >= 80);
+    if (isPrem) {
+        const PREM_PACKS = [450, 1000, 2200];
+        for (const n of allNums) if (PREM_PACKS.includes(n)) return n + 'prem';
+        if (allNums.includes(2000)) return '2200prem';
+        if (allNums.length) {
+            const closest = PREM_PACKS.reduce((a, b) =>
+                Math.abs(a - allNums[0]) <= Math.abs(b - allNums[0]) ? a : b);
+            return closest + 'prem';
+        }
+        return '1000prem';
+    }
+    for (const n of allNums) if (INV_PRICELIST.includes(n)) return String(n);
+    return '';
+}
+
+// Extract backup codes dari teks customer
 function invExtractCodes(text) {
     if (!text) return [];
     const codes = [];
     const lines = text.split(/\n/);
 
-    // Strategi 1: cari label backup code, ambil kode dari baris itu + baris berikutnya
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const isLabel = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan))\s*\d*\s*:?/i.test(line);
-        if (!isLabel) continue;
-
-        const chunk = [line];
-        for (let j = i+1; j <= i+2 && j < lines.length; j++) {
-            const next = lines[j].trim();
-            if (/(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan)|username|password|order|bukti|payment)/i.test(next)
-                && !invIsLikelyCode(next.replace(/[^a-z0-9]/gi, ''))) break;
-            chunk.push(next);
-        }
-
-        const chunkText = chunk.join(' ')
-            .replace(/(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan)?)\s*\d*\s*:?/gi, ' ');
-        for (const tok of chunkText.split(/[\s,;|`\-]+/)) {
-            const t = tok.trim().toLowerCase();
-            if (invIsLikelyCode(t) && !codes.includes(t)) {
-                codes.push(t);
-                if (codes.length >= 5) return codes;
-            }
-        }
-    }
-
-    if (codes.length >= 5) return codes.slice(0, 5);
-
-    // Strategi 2: scan seluruh teks, filter baris yang jelas bukan kode
-    const filteredLines = lines.filter(l =>
-        !/(?:username|usn|user|password|pasword|pw|pass|order|nominal|jumlah|sisa|bukti|payment|format)\s*[:\-–(]/i.test(l)
-    );
-    for (const tok of filteredLines.join('\n').replace(/[^\w\s\n]/g, ' ').split(/[\s\n\r]+/)) {
-        const t = tok.trim().toLowerCase();
+    const addCode = (tok) => {
+        const t = tok.toLowerCase().trim().replace(/[`'"]/g, '');
         if (invIsLikelyCode(t) && !codes.includes(t)) {
             codes.push(t);
-            if (codes.length >= 5) break;
+            return codes.length >= 5;
         }
+        return false;
+    };
+
+    // Strategi 1: label "code back up X:" / "kode pemulihan X:"
+    const backupLabelPat = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan|cadangan)|cadangan|bc)\s*\d*\s*[:\-–=]?\s*/i;
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!backupLabelPat.test(line)) continue;
+        const chunk = [line];
+        for (let j = i + 1; j <= i + 2 && j < lines.length; j++) {
+            const next = lines[j].trim();
+            if (backupLabelPat.test(next) && !invIsLikelyCode(next.replace(/\W/g, ''))) break;
+            if (/(?:username|password|order|bukti|payment|foto)/i.test(next)
+                && !invIsLikelyCode(next.replace(/\W/g, ''))) break;
+            chunk.push(next);
+        }
+        const chunkClean = chunk.join(' ').replace(backupLabelPat, ' ');
+        for (const tok of chunkClean.split(/[\s,;|`'\-]+/)) {
+            if (addCode(tok) && codes.length >= 5) return codes;
+        }
+    }
+    if (codes.length >= 5) return codes.slice(0, 5);
+
+    // Strategi 2: "1. kode" atau "1) kode"
+    for (const line of lines) {
+        const m = line.match(/^\s*\d+[.)]\s*([a-z0-9]{9})\s*$/i);
+        if (m && addCode(m[1]) && codes.length >= 5) return codes;
+    }
+    if (codes.length >= 5) return codes.slice(0, 5);
+
+    // Strategi 3: bullet/dash langsung ke kode
+    for (const line of lines) {
+        const m = line.match(/^\s*[-•·*]\s*([a-z0-9]{9})\s*$/i);
+        if (m && addCode(m[1]) && codes.length >= 5) return codes;
+    }
+    if (codes.length >= 5) return codes.slice(0, 5);
+
+    // Strategi 4: scan token (skip baris instruksi & baris CAPSLOCK)
+    const filteredLines = lines.filter(l =>
+        !/(?:username|usn|usr|user|password|pasword|pw|pass|order|nominal|jumlah|sisa|bukti|payment|format|topup|harap|wajib|tuliskan|minimal|roblox|mimin|admin|cara|klik|login|akses|pilih|salin|kirim|jangan|supaya|proses|biar)\b/i.test(l) &&
+        !/^[A-Z\s!?,.-]+$/.test(l.trim())
+    );
+    for (const tok of filteredLines.join('\n').replace(/[^\w\s\n]/g, ' ').split(/[\s\n\r]+/)) {
+        if (addCode(tok) && codes.length >= 5) return codes;
     }
 
     return codes.slice(0, 5);
 }
 
-// ── EXTRACT USERNAME ──────────────────────────────────────────────────────
-function invExtractUsername(text) {
-    const patterns = [
-        /(?:🫧\s*)?username\s*(?:\(@\)\s*)?[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /(?:🫧\s*)?usn\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /(?:🫧\s*)?user\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /👤\s*([^\n\r🫧🌸✨👤🔑🛡]+)/,
-    ];
-    for (const pat of patterns) {
-        const m = text.match(pat);
-        if (m) {
-            const val = m[1].trim()
-                .replace(/^[🫧🌸✨👤🔑🛡\s@*_]+|[🫧🌸✨👤🔑🛡\s@*_]+$/g, '')
-                .split(/\s+/)[0]; // username = satu kata
-            if (val && val.length >= 2) return val;
-        }
-    }
-    return '';
-}
-
-// ── EXTRACT PASSWORD ──────────────────────────────────────────────────────
-function invExtractPassword(text) {
-    // FIX: baca sampai akhir baris, termasuk spasi (password bisa multi-kata)
-    const patterns = [
-        /(?:🫧\s*)?password\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /(?:🫧\s*)?pasword\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /(?:🫧\s*)?pw\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /(?:🫧\s*)?pass\s*[:\-–]\s*([^\n\r🫧🌸✨👤🔑🛡]+)/i,
-        /🔑\s*([^\n\r🫧🌸✨👤🔑🛡]+)/,
-    ];
-    for (const pat of patterns) {
-        const m = text.match(pat);
-        if (m) {
-            const val = m[1].trim()
-                .replace(/^[🫧🌸✨👤🔑🛡\s*_]+|[🫧🌸✨👤🔑🛡\s*_]+$/g, '')
-                .trim();
-            if (val && val.length >= 1) return val;
-        }
-    }
-    return '';
-}
-
-// ── EXTRACT ROBUX ─────────────────────────────────────────────────────────
-function invExtractRobux(text) {
-    // Hapus baris backup/sisa robux supaya angkanya ga ikut terbaca
-    const safeLines = text.split('\n').filter(l =>
-        !/(?:backup|code\s*back|kode\s*(?:backup|pemulihan)|sisa\s*robux)/i.test(l)
-    );
-    const safeText = safeLines.join('\n');
-
-    // Normalisasi "80robux" → "80", "80r" → "80"
-    const normalized = safeText
-        .replace(/(\d+)\s*r(?:obux)?\b/gi, '$1')
-        .replace(/\b(\d+)[kK]\b/g, (_,n) => String(parseInt(n)*1000));
-
-    // Cari di baris yang ada label order/jumlah/nominal
-    const orderPats = [
-        /(?:order\s*robux|order\s*(?:brp|berapa)?|nominal|jumlah|beli)\s*[:\-–]?\s*([^\n\r]+)/i,
-    ];
-    for (const pat of orderPats) {
-        const m = normalized.match(pat);
-        if (m && /\d/.test(m[1])) {
-            const nums = (m[1].match(/\d+/g)||[]).map(Number);
-            for (const n of nums) if (INV_PRICELIST.includes(n)) return String(n);
-            const valid = nums.filter(n => n >= 80 && n <= 100000);
-            if (valid.length) return String(valid[0]);
-        }
-    }
-
-    // Fallback: cari semua angka yang cocok pricelist
-    const nums = (normalized.match(/\b\d+\b/g)||[]).map(Number);
-    for (const n of nums) if (INV_PRICELIST.includes(n)) return String(n);
-
-    return '';
-}
-
-// ── UI HELPERS ────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
 function invCheckCodes() {
     const codes = invExtractCodes(document.getElementById('fCodes').value);
     const found = document.getElementById('invCodesFound');
@@ -1051,22 +1131,38 @@ function invUpdatePills() {
     document.getElementById('invParsedPreview').classList.add('show');
 }
 
-// ── AUTO PARSE & GENERATE ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO PARSE & GENERATE
+// ─────────────────────────────────────────────────────────────────────────────
 function invAutoParseAndGenerate() {
     const rawInput = document.getElementById('invRawPaste').value;
     if (!rawInput.trim()) { showToast('❌ Teks kosong!'); return; }
 
-    // FIX UTAMA: selalu clear semua field dulu sebelum isi data baru
-    // Ini yang bikin data lama nyangkut ke invoice berikutnya
     document.getElementById('fUser').value  = '';
     document.getElementById('fPass').value  = '';
     document.getElementById('fRobux').value = '';
     document.getElementById('fCodes').value = '';
 
-    // Hapus timestamp chat
-    const cleaned = rawInput
+    // Hapus timestamp chat: [3/13/2026 1:53 PM] Nama.:
+    let cleaned = rawInput
         .replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g, '')
         .trim();
+
+    // Hapus baris instruksi template (mengandung frasa instruksi bukan data customer)
+    cleaned = cleaned.split('\n').filter(l => {
+        const isInstruction =
+            /harap\s+diisi/i.test(l) ||
+            /jika\s+prem\s+tulis/i.test(l) ||
+            /tulis\s+order\s+brp/i.test(l) ||
+            /wajib\s+diisi\s+dengan\s+lengkap/i.test(l) ||
+            /tuliskan\s+minimal/i.test(l) ||
+            /boleh\s+sambil\s+dimainkan/i.test(l) ||
+            /tidak\s+mengganggu\s+pengisian/i.test(l) ||
+            /meski\s+kamu\s+offline/i.test(l) ||
+            /robux\s+tetap\s+bisa/i.test(l) ||
+            /harap\s+dibaca\s+wajib/i.test(l);
+        return !isInstruction;
+    }).join('\n');
 
     const username = invExtractUsername(cleaned);
     const password = invExtractPassword(cleaned);
@@ -1083,7 +1179,9 @@ function invAutoParseAndGenerate() {
     invGenerateInvoice();
 }
 
-// ── CLEAR ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// CLEAR & PASTE
+// ─────────────────────────────────────────────────────────────────────────────
 function invClearRaw() {
     document.getElementById('invRawPaste').value = '';
     document.getElementById('fUser').value  = '';
@@ -1098,7 +1196,6 @@ function invClearRaw() {
     showToast('🧹 Cleared!');
 }
 
-// ── PASTE ─────────────────────────────────────────────────────────────────
 async function invDoPaste() {
     try {
         const text = await navigator.clipboard.readText();
@@ -1109,8 +1206,11 @@ async function invDoPaste() {
     } catch { showToast('❌ Gagal baca clipboard. Izinkan akses dulu.'); }
 }
 
-// ── GENERATE INVOICE ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// GENERATE & COPY INVOICE
+// ─────────────────────────────────────────────────────────────────────────────
 let invLastInvoiceText = '';
+
 function invGenerateInvoice() {
     const robuxRaw = document.getElementById('fRobux').value.trim();
     const user     = document.getElementById('fUser').value.trim();
@@ -1139,7 +1239,6 @@ function invGenerateInvoice() {
     document.getElementById('invCopyStatus').classList.remove('show');
 }
 
-// ── COPY INVOICE ──────────────────────────────────────────────────────────
 function invCopyInvoice() {
     if (!invLastInvoiceText) { showToast('❌ Generate invoice dulu!'); return; }
     const doCopy = (t) => {
@@ -1162,7 +1261,7 @@ function invCopyInvoice() {
     }
 }
 
-// ==================== RESELLER — NEW DESIGN ====================
+// ==================== RESELLER ====================
 const nominalData = [
     { amount: "80robux",    price: "Rp 14.700" },
     { amount: "80robux 2",  price: "Rp 29.400" },
@@ -1239,11 +1338,9 @@ const resellerData = [
     { displayName: "♡! ﹏", username: "@THOTIANA", color: "#8B5CF6" }
 ];
 
-// State
 let rsState = { command: 'proses', nominal: null, reseller: null };
 
 function initializeResellerBot() {
-    // Build HTML inline instead of using old step structure
     const section = document.querySelector('.reseller-section');
     const existingContainer = section.querySelector('.reseller-container');
     if (existingContainer) existingContainer.remove();
@@ -1251,7 +1348,6 @@ function initializeResellerBot() {
     const container = document.createElement('div');
     container.className = 'reseller-container';
     container.innerHTML = `
-        <!-- Top bar: command tabs -->
         <div class="reseller-topbar">
             <span class="reseller-topbar-label">Command:</span>
             <div class="cmd-tabs">
@@ -1260,18 +1356,13 @@ function initializeResellerBot() {
                 <button class="cmd-tab" data-cmd="kurangsaldo">/kurangsaldo</button>
             </div>
         </div>
-
-        <!-- Body: nominal + reseller -->
         <div class="reseller-body">
-            <!-- Nominal panel (only for /proses) -->
             <div class="reseller-panel-nominal" id="rsNominalPanel">
                 <div class="reseller-panel-header">Pilih Nominal</div>
                 <div class="nominal-chips-wrap">
                     <div class="nominal-chips" id="rsNominalChips"></div>
                 </div>
             </div>
-
-            <!-- Reseller panel -->
             <div class="reseller-panel-reseller">
                 <div class="reseller-search-wrap">
                     <i class="fas fa-search"></i>
@@ -1282,8 +1373,6 @@ function initializeResellerBot() {
                 </div>
             </div>
         </div>
-
-        <!-- Result bar -->
         <div class="reseller-result-bar">
             <div class="reseller-result-preview" id="rsPreview">Pilih nominal & reseller dulu…</div>
             <button class="reseller-reset-btn" id="rsResetBtn"><i class="fas fa-redo"></i> Reset</button>
@@ -1292,7 +1381,6 @@ function initializeResellerBot() {
     `;
     section.appendChild(container);
 
-    // Populate nominal chips
     const nominalEl = document.getElementById('rsNominalChips');
     nominalData.forEach(n => {
         const chip = document.createElement('div');
@@ -1308,19 +1396,15 @@ function initializeResellerBot() {
         nominalEl.appendChild(chip);
     });
 
-    // Populate reseller list
     renderResellerList(resellerData);
 
-    // Search
     document.getElementById('rsSearch').addEventListener('input', function() {
         const q = this.value.toLowerCase();
-        const filtered = resellerData.filter(r =>
+        renderResellerList(resellerData.filter(r =>
             r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q)
-        );
-        renderResellerList(filtered);
+        ));
     });
 
-    // Command tabs
     document.querySelectorAll('.cmd-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.cmd-tab').forEach(t => t.classList.remove('active'));
@@ -1328,17 +1412,12 @@ function initializeResellerBot() {
             rsState.command = this.getAttribute('data-cmd');
             rsState.nominal = null;
             document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
-            // Show/hide nominal panel
-            const panel = document.getElementById('rsNominalPanel');
-            panel.style.display = rsState.command === 'proses' ? '' : 'none';
+            document.getElementById('rsNominalPanel').style.display = rsState.command === 'proses' ? '' : 'none';
             updateRsResult();
         });
     });
 
-    // Reset
     document.getElementById('rsResetBtn').addEventListener('click', resetReseller);
-
-    // Copy
     document.getElementById('rsCopyBtn').addEventListener('click', copyResellerCmd);
 }
 
@@ -1369,24 +1448,19 @@ function renderResellerList(data) {
 function updateRsResult() {
     const preview = document.getElementById('rsPreview');
     const copyBtn = document.getElementById('rsCopyBtn');
-
     const needNominal = rsState.command === 'proses';
-    const hasNominal = !needNominal || rsState.nominal;
-    const ready = hasNominal && rsState.reseller;
-
+    const ready = (!needNominal || rsState.nominal) && rsState.reseller;
     if (ready) {
-        let cmd = needNominal
+        const cmd = needNominal
             ? `/${rsState.command} ${rsState.nominal} ${rsState.reseller}`
             : `/${rsState.command} ${rsState.reseller}`;
         preview.textContent = cmd;
         preview.classList.add('ready');
         copyBtn.classList.add('ready');
     } else {
-        let hint = '';
-        if (!rsState.reseller && needNominal && !rsState.nominal) hint = 'Pilih nominal & reseller dulu…';
-        else if (needNominal && !rsState.nominal) hint = 'Pilih nominal dulu…';
-        else hint = 'Pilih reseller dulu…';
-        preview.textContent = hint;
+        preview.textContent = !rsState.reseller && needNominal && !rsState.nominal
+            ? 'Pilih nominal & reseller dulu…'
+            : needNominal && !rsState.nominal ? 'Pilih nominal dulu…' : 'Pilih reseller dulu…';
         preview.classList.remove('ready');
         copyBtn.classList.remove('ready');
     }
@@ -1395,14 +1469,14 @@ function updateRsResult() {
 function copyResellerCmd() {
     if (!document.getElementById('rsCopyBtn').classList.contains('ready')) return;
     const text = document.getElementById('rsPreview').textContent;
-    const doCopy = (t) => {
-        const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;left:-9999px';
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-        showToast(`✅ Dicopy: ${t}`);
-    };
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(()=>showToast(`✅ Dicopy: ${text}`)).catch(()=>doCopy(text));
-    } else { doCopy(text); }
+        navigator.clipboard.writeText(text).then(() => showToast(`✅ Dicopy: ${text}`)).catch(() => {
+            const ta = document.createElement('textarea'); ta.value = text;
+            ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            showToast(`✅ Dicopy: ${text}`);
+        });
+    }
 }
 
 function resetReseller() {
@@ -1454,11 +1528,13 @@ function addressCopy(text, el) {
     };
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(done).catch(() => {
-            const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px';
+            const ta = document.createElement('textarea'); ta.value = text;
+            ta.style.cssText = 'position:fixed;left:-9999px';
             document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
         });
     } else {
-        const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;left:-9999px';
+        const ta = document.createElement('textarea'); ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px';
         document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
     }
 }
@@ -1473,7 +1549,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollButtons();
     initializeBackupFormatter();
 
-    // Invoice listeners
     document.getElementById('fCodes').addEventListener('input', invCheckCodes);
     (() => {
         const ta = document.getElementById('invRawPaste');
@@ -1488,7 +1563,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     })();
 
-    // Nav listeners
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     document.getElementById('showStats').addEventListener('click', showStats);
     document.getElementById('toggleAllBtn').addEventListener('click', toggleAllTemplates);
