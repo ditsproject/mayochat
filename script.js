@@ -777,15 +777,17 @@ function switchToolTab(tab) {
 
 // ==================== SCROLL BUTTONS ====================
 function initializeScrollButtons() {
-    document.getElementById('scrollToResellerFab').addEventListener('click', () => {
-        document.querySelector('.reseller-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
-    });
+    const scrollTo = (selector) => {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY - 120;
+        window.scrollTo({ top, behavior: 'smooth' });
+    };
+    document.getElementById('scrollToResellerFab').addEventListener('click', () => scrollTo('.reseller-section'));
+    document.getElementById('scrollToToolsFab').addEventListener('click', () => scrollTo('.tools-section'));
     document.getElementById('scrollToTopFab').addEventListener('click', () => {
-        window.scrollTo({ top:0, behavior:'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         showToast('🏠 Kembali ke atas');
-    });
-    document.getElementById('scrollToToolsFab').addEventListener('click', () => {
-        document.querySelector('.tools-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
     });
 }
 
