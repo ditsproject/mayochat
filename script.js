@@ -1216,7 +1216,6 @@ function invClearRaw() {
     document.getElementById('invOutputBox').textContent =
         'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
     invLastInvoiceText = '';
-    document.getElementById('invCopyStatus').classList.remove('show');
     invResetUserLookup();
     // Reset pills ke state awal
     ['invPillRobuxVal','invPillUserVal','invPillPassVal'].forEach(id => {
@@ -1354,7 +1353,6 @@ function invGenerateInvoice() {
     const esc = invoice.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     box.innerHTML = esc.replace(/`([^`]+)`/g, '<span class="inv-code-span">`$1`</span>');
     showToast('✅ Invoice dibuat!');
-    document.getElementById('invCopyStatus').classList.remove('show');
 }
 
 function invCopyInvoice() {
@@ -1364,13 +1362,11 @@ function invCopyInvoice() {
         ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px';
         document.body.appendChild(ta); ta.select();
         document.execCommand('copy'); document.body.removeChild(ta);
-        document.getElementById('invCopyStatus').classList.add('show');
         showToast('✅ Invoice dicopy! Paste ke Telegram 🎉');
     };
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(invLastInvoiceText)
             .then(() => {
-                document.getElementById('invCopyStatus').classList.add('show');
                 showToast('✅ Invoice dicopy! Paste ke Telegram 🎉');
             })
             .catch(() => doCopy(invLastInvoiceText));
