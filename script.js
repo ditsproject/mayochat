@@ -1244,41 +1244,36 @@ let invLastInvoiceText = '';
 // ==================== SMART INVOICE VALIDATOR ====================
 const ROBLOX_PROXY_URL = 'https://roblox-proxy.mayocuak.workers.dev';
 
+// Wake up Worker saat halaman load biar ga cold start saat dipakai
+function warmUpWorker() {
+    fetch(ROBLOX_PROXY_URL, { method: 'GET' }).catch(() => {});
+}
+
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
     const clean = username.trim().replace(/\s+/g, '');
-
-    const attempt = async () => {
+    try {
         const res = await fetch(ROBLOX_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usernames: [clean] }),
         });
-        if (!res.ok) throw new Error('Worker error: ' + res.status);
-        return await res.json();
-    };
-
-    // Retry sampai 2x kalau gagal (handle cold start Worker)
-    let data;
-    for (let i = 0; i < 2; i++) {
-        try {
-            data = await attempt();
-            break;
-        } catch(e) {
-            if (i === 1) return { ok: 'warn', msg: 'Tidak bisa cek: ' + e.message };
-            await new Promise(r => setTimeout(r, 800)); // tunggu 0.8s sebelum retry
+        if (!res.ok) throw new Error('Worker error ' + res.status);
+        const data = await res.json();
+        if (data?.data && data.data.length > 0) {
+            const user = data.data[0];
+            return { ok: true, id: user.id, name: user.name };
         }
+        return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
+    } catch(e) {
+        return { ok: 'warn', msg: 'Tidak bisa cek username, coba lagi' };
     }
-
-    if (data?.data && data.data.length > 0) {
-        const user = data.data[0];
-        return { ok: true, msg: `"${user.name}" ditemukan`, id: user.id, name: user.name };
-    }
-    return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
 }
 
 // Live username lookup
 let invUserLookupTimer = null;
+let invLookupRunning = false;
+
 function invTriggerUserLookup(username) {
     const empty   = document.getElementById('invUserEmpty');
     const found   = document.getElementById('invUserFound');
@@ -1298,13 +1293,16 @@ function invTriggerUserLookup(username) {
         return;
     }
 
-    show(loading);
     clearTimeout(invUserLookupTimer);
+    show(loading);
+
     invUserLookupTimer = setTimeout(async () => {
+        if (invLookupRunning) return;
+        invLookupRunning = true;
         const result = await checkRobloxUsername(username);
+        invLookupRunning = false;
         if (result.ok === true) {
             document.getElementById('invUserName').textContent = result.name;
-            document.getElementById('invUserId').textContent = 'ID: ' + result.id;
             document.getElementById('invUserAvatar').src =
                 `${ROBLOX_PROXY_URL}/avatar?userId=${result.id}`;
             lookup.style.borderColor = 'var(--success)';
@@ -1314,10 +1312,12 @@ function invTriggerUserLookup(username) {
             lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
             show(err);
         }
-    }, 700);
+    }, 800);
 }
 
 function invResetUserLookup() {
+    invLookupRunning = false;
+    clearTimeout(invUserLookupTimer);
     const empty   = document.getElementById('invUserEmpty');
     const found   = document.getElementById('invUserFound');
     const err     = document.getElementById('invUserErr');
@@ -1683,6 +1683,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollButtons();
     initializeBackupFormatter();
     invUpdatePills(); // tampilkan pills dari awal
+    warmUpWorker();  // wake up Cloudflare Worker biar ga cold start
 
     document.getElementById('fCodes').addEventListener('input', invCheckCodes);
 
