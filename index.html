@@ -196,67 +196,18 @@
             </div>
 
             <div class="backup-formatter">
-                <!-- TAB HEADER -->
+                <!-- TAB HEADER — Invoice kiri, Backup kanan -->
                 <div class="tools-tabs">
-                    <button class="tools-tab active" id="tabBackup" onclick="switchToolTab('backup')">
-                        <i class="fas fa-code"></i> Backup Code
-                    </button>
-                    <button class="tools-tab" id="tabInvoice" onclick="switchToolTab('invoice')">
+                    <button class="tools-tab active" id="tabInvoice" onclick="switchToolTab('invoice')">
                         <i class="fas fa-file-invoice"></i> Invoice Maker
                     </button>
-                </div>
-
-                <!-- TAB PANE: BACKUP CODE -->
-                <div id="paneBackup" class="tools-pane">
-                    <div class="formatter-header">
-                        <div class="formatter-header-buttons">
-                            <button class="auto-paste-btn" id="autoPasteBtn">
-                                <i class="fas fa-paste"></i> Auto Paste
-                            </button>
-                            <button class="btn-clear" id="clearBackupBtn">
-                                <i class="fas fa-trash-alt"></i> Clear
-                            </button>
-                        </div>
-                    </div>
-                    <div class="formatter-container">
-                        <div class="formatter-input">
-                            <div class="formatter-label">
-                                <i class="fas fa-keyboard"></i>
-                                <span>Masukkan 5 Kode Backup (format apa saja)</span>
-                            </div>
-                            <textarea
-                                class="code-input"
-                                id="backupInput"
-                                placeholder="Masukkan 5 kode backup"
-                                rows="8"
-                            ></textarea>
-                            <div class="input-info">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Bot hanya membaca format yang benar. Fitur ini mengubah semua format menjadi format yang benar.</span>
-                            </div>
-                        </div>
-                        <div class="formatter-output">
-                            <div class="formatter-label">
-                                <i class="fas fa-clipboard-check"></i>
-                                <span>Hasil Format untuk Bot</span>
-                            </div>
-                            <div class="code-output" id="backupOutput">
-🔍 WAJIB DIISI 5 CODE BACKUP!!
-- code back up 1: 
-- code back up 2: 
-- code back up 3: 
-- code back up 4: 
-- code back up 5: 
-                            </div>
-                            <button class="copy-btn" id="copyBackupBtn">
-                                <i class="fas fa-copy"></i> Copy Format
-                            </button>
-                        </div>
-                    </div>
+                    <button class="tools-tab" id="tabBackup" onclick="switchToolTab('backup')">
+                        <i class="fas fa-code"></i> Backup Code
+                    </button>
                 </div>
 
                 <!-- TAB PANE: INVOICE -->
-                <div id="paneInvoice" class="tools-pane" style="display:none;">
+                <div id="paneInvoice" class="tools-pane">
                     <div class="formatter-header">
                         <div class="formatter-header-buttons">
                             <button class="auto-paste-btn" onclick="invDoPaste()">
@@ -308,9 +259,81 @@
                             <button class="copy-btn" onclick="invCopyInvoice()">
                                 <i class="fas fa-copy"></i> Copy ke Telegram
                             </button>
+                            <!-- USER LOOKUP CARD -->
+                            <div class="inv-user-lookup" id="invUserLookup">
+                                <div class="inv-user-lookup-empty" id="invUserEmpty">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>Username Roblox</span>
+                                </div>
+                                <div class="inv-user-lookup-found" id="invUserFound" style="display:none;">
+                                    <img class="inv-user-avatar" id="invUserAvatar" src="" alt="">
+                                    <div class="inv-user-info">
+                                        <div class="inv-user-name" id="invUserName"></div>
+                                        <div class="inv-user-id" id="invUserId"></div>
+                                    </div>
+                                    <i class="fas fa-check-circle inv-user-check"></i>
+                                </div>
+                                <div class="inv-user-lookup-err" id="invUserErr" style="display:none;">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span id="invUserErrTxt">Username tidak ditemukan</span>
+                                </div>
+                                <div class="inv-user-lookup-loading" id="invUserLoading" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Mengecek username...</span>
+                                </div>
+                            </div>
                             <div id="invCopyStatus" class="inv-copy-status">
                                 <i class="fas fa-check-circle"></i> Berhasil dicopy ke clipboard!
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB PANE: BACKUP CODE -->
+                <div id="paneBackup" class="tools-pane" style="display:none;">
+                    <div class="formatter-header">
+                        <div class="formatter-header-buttons">
+                            <button class="auto-paste-btn" id="autoPasteBtn">
+                                <i class="fas fa-paste"></i> Auto Paste
+                            </button>
+                            <button class="btn-clear" id="clearBackupBtn">
+                                <i class="fas fa-trash-alt"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="formatter-container">
+                        <div class="formatter-input">
+                            <div class="formatter-label">
+                                <i class="fas fa-keyboard"></i>
+                                <span>Masukkan 5 Kode Backup (format apa saja)</span>
+                            </div>
+                            <textarea
+                                class="code-input"
+                                id="backupInput"
+                                placeholder="Masukkan 5 kode backup"
+                                rows="8"
+                            ></textarea>
+                            <div class="input-info">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Bot hanya membaca format yang benar. Fitur ini mengubah semua format menjadi format yang benar.</span>
+                            </div>
+                        </div>
+                        <div class="formatter-output">
+                            <div class="formatter-label">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Hasil Format untuk Bot</span>
+                            </div>
+                            <div class="code-output" id="backupOutput">
+🔍 WAJIB DIISI 5 CODE BACKUP!!
+- code back up 1: 
+- code back up 2: 
+- code back up 3: 
+- code back up 4: 
+- code back up 5: 
+                            </div>
+                            <button class="copy-btn" id="copyBackupBtn">
+                                <i class="fas fa-copy"></i> Copy Format
+                            </button>
                         </div>
                     </div>
                 </div>

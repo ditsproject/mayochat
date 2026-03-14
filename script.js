@@ -762,16 +762,16 @@ function switchToolTab(tab) {
     const tabBackup   = document.getElementById('tabBackup');
     const tabInvoice  = document.getElementById('tabInvoice');
 
-    if (tab === 'backup') {
+    if (tab === 'invoice') {
+        paneInvoice.style.display = 'block';
+        paneBackup.style.display  = 'none';
+        tabInvoice.classList.add('active');
+        tabBackup.classList.remove('active');
+    } else {
         paneBackup.style.display  = 'block';
         paneInvoice.style.display = 'none';
         tabBackup.classList.add('active');
         tabInvoice.classList.remove('active');
-    } else {
-        paneBackup.style.display  = 'none';
-        paneInvoice.style.display = 'block';
-        tabInvoice.classList.add('active');
-        tabBackup.classList.remove('active');
     }
 }
 
@@ -1145,13 +1145,17 @@ function invUpdatePills() {
     const user  = document.getElementById('fUser').value.trim();
     const pass  = document.getElementById('fPass').value.trim();
     const codes = invExtractCodes(document.getElementById('fCodes').value);
+
     const sp = (id, vid, val, ok) => {
-        document.getElementById(vid).textContent = val || '–';
-        document.getElementById(id).className = 'inv-pill ' + (ok ? 'ok' : 'warn');
+        const el = document.getElementById(vid);
+        if (!el) return;
+        el.textContent = val || '-';
+        const pill = document.getElementById(id);
+        if (pill) pill.className = 'inv-pill ' + (ok ? 'ok' : 'warn');
     };
-    sp('invPillRobux', 'invPillRobuxVal', robux ? invFormatRobux(robux) : '', !!robux);
-    sp('invPillUser',  'invPillUserVal',  user,  !!user);
-    sp('invPillPass',  'invPillPassVal',  pass ? '••••' : '', !!pass);
+    sp('invPillRobux', 'invPillRobuxVal', robux ? invFormatRobux(robux) : '-', !!robux);
+    sp('invPillUser',  'invPillUserVal',  user  || '-', !!user);
+    sp('invPillPass',  'invPillPassVal',  pass  ? '••••' : '-', !!pass);
     sp('invPillCodes', 'invPillCodesVal', codes.length + ' kode', codes.length >= 5);
     document.getElementById('invParsedPreview').classList.add('show');
 }
@@ -1188,8 +1192,8 @@ function invAutoParseAndGenerate() {
     const password = invExtractPassword(cleaned);
     const robuxRaw = invExtractRobux(cleaned);
 
-    if (username) document.getElementById('fUser').value  = username;
-    if (password) document.getElementById('fPass').value  = password;
+    if (username) document.getElementById('fUser').value = username;
+    if (password) document.getElementById('fPass').value = password;
     if (robuxRaw) document.getElementById('fRobux').value = invFormatRobux(robuxRaw) || robuxRaw;
 
     document.getElementById('fCodes').value = cleaned;
@@ -1197,6 +1201,9 @@ function invAutoParseAndGenerate() {
     invCheckCodes();
     invUpdatePills();
     invGenerateInvoice();
+
+    // Lookup jalan di background, TIDAK block invoice
+    if (username) invTriggerUserLookup(username);
 }
 
 function invClearRaw() {
@@ -1205,11 +1212,20 @@ function invClearRaw() {
     document.getElementById('fPass').value  = '';
     document.getElementById('fRobux').value = '';
     document.getElementById('fCodes').value = '';
-    document.getElementById('invParsedPreview').classList.remove('show');
+    document.getElementById('invParsedPreview').classList.add('show');
     document.getElementById('invOutputBox').textContent =
         'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
     invLastInvoiceText = '';
     document.getElementById('invCopyStatus').classList.remove('show');
+    invResetUserLookup();
+    // Reset pills ke state awal
+    ['invPillRobuxVal','invPillUserVal','invPillPassVal'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = '-';
+    });
+    const cv = document.getElementById('invPillCodesVal'); if (cv) cv.textContent = '0 kode';
+    ['invPillRobux','invPillUser','invPillPass','invPillCodes'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.className = 'inv-pill warn';
+    });
     showToast('🧹 Cleared!');
 }
 
@@ -1224,6 +1240,94 @@ async function invDoPaste() {
 }
 
 let invLastInvoiceText = '';
+
+// ==================== SMART INVOICE VALIDATOR ====================
+const ROBLOX_PROXY_URL = 'https://roblox-proxy.mayocuak.workers.dev';
+
+async function checkRobloxUsername(username) {
+    if (!username.trim()) return { ok: false, msg: 'Username kosong' };
+    const clean = username.trim().replace(/\s+/g, '');
+
+    const attempt = async () => {
+        const res = await fetch(ROBLOX_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [clean] }),
+        });
+        if (!res.ok) throw new Error('Worker error: ' + res.status);
+        return await res.json();
+    };
+
+    // Retry sampai 2x kalau gagal (handle cold start Worker)
+    let data;
+    for (let i = 0; i < 2; i++) {
+        try {
+            data = await attempt();
+            break;
+        } catch(e) {
+            if (i === 1) return { ok: 'warn', msg: 'Tidak bisa cek: ' + e.message };
+            await new Promise(r => setTimeout(r, 800)); // tunggu 0.8s sebelum retry
+        }
+    }
+
+    if (data?.data && data.data.length > 0) {
+        const user = data.data[0];
+        return { ok: true, msg: `"${user.name}" ditemukan`, id: user.id, name: user.name };
+    }
+    return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
+}
+
+// Live username lookup
+let invUserLookupTimer = null;
+function invTriggerUserLookup(username) {
+    const empty   = document.getElementById('invUserEmpty');
+    const found   = document.getElementById('invUserFound');
+    const err     = document.getElementById('invUserErr');
+    const loading = document.getElementById('invUserLoading');
+    const lookup  = document.getElementById('invUserLookup');
+    if (!lookup) return;
+
+    const show = (el) => {
+        [empty, found, err, loading].forEach(e => { if(e) e.style.display = 'none'; });
+        if (el) el.style.display = 'flex';
+    };
+
+    if (!username || username.trim().length < 3) {
+        show(empty);
+        lookup.style.borderColor = '';
+        return;
+    }
+
+    show(loading);
+    clearTimeout(invUserLookupTimer);
+    invUserLookupTimer = setTimeout(async () => {
+        const result = await checkRobloxUsername(username);
+        if (result.ok === true) {
+            document.getElementById('invUserName').textContent = result.name;
+            document.getElementById('invUserId').textContent = 'ID: ' + result.id;
+            document.getElementById('invUserAvatar').src =
+                `${ROBLOX_PROXY_URL}/avatar?userId=${result.id}`;
+            lookup.style.borderColor = 'var(--success)';
+            show(found);
+        } else {
+            document.getElementById('invUserErrTxt').textContent = result.msg;
+            lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
+            show(err);
+        }
+    }, 700);
+}
+
+function invResetUserLookup() {
+    const empty   = document.getElementById('invUserEmpty');
+    const found   = document.getElementById('invUserFound');
+    const err     = document.getElementById('invUserErr');
+    const loading = document.getElementById('invUserLoading');
+    const lookup  = document.getElementById('invUserLookup');
+    if (!lookup) return;
+    [found, err, loading].forEach(e => { if(e) e.style.display = 'none'; });
+    if (empty) empty.style.display = 'flex';
+    lookup.style.borderColor = '';
+}
 
 function invGenerateInvoice() {
     const robuxRaw = document.getElementById('fRobux').value.trim();
@@ -1578,8 +1682,14 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     initializeScrollButtons();
     initializeBackupFormatter();
+    invUpdatePills(); // tampilkan pills dari awal
 
     document.getElementById('fCodes').addEventListener('input', invCheckCodes);
+
+    // Live username lookup
+    document.getElementById('fUser').addEventListener('input', function() {
+        invTriggerUserLookup(this.value);
+    });
     (() => {
         const ta = document.getElementById('invRawPaste');
         let timer;
