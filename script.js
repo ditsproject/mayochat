@@ -543,43 +543,67 @@ Screenshot errornya, kirim ke mimin biar dicek.`
 
 // ==================== STATE ====================
 let templatesHidden = true;
+let activeCategory = 'all';
 
 // ==================== HELPER ====================
 function getCategoryName(cat) {
     return { order:'Order', problem:'Problem', status:'Status', security:'Security', other:'Lainnya', keamanan:'Keamanan' }[cat] || 'Lainnya';
 }
 
-// ==================== LOAD TEMPLATES ====================
+function getCategoryIcon(category) {
+    const icons = {
+        'order': 'fa-shopping-cart',
+        'problem': 'fa-exclamation-triangle',
+        'status': 'fa-info-circle',
+        'security': 'fa-shield-alt',
+        'keamanan': 'fa-shield-alt',
+        'other': 'fa-ellipsis-h'
+    };
+    return icons[category] || 'fa-tag';
+}
+
+// ==================== LOAD TEMPLATES — dari versi 2 ====================
 function loadTemplates() {
     const grid = document.getElementById('templatesGrid');
     grid.innerHTML = '';
     document.getElementById('templateCount').textContent = templatesData.length;
-    templatesData.forEach(t => {
-        const used = localStorage.getItem(`template-${t.id}-used`) || 0;
+
+    templatesData.forEach(template => {
+        const usedCount = localStorage.getItem(`template-${template.id}-used`) || 0;
         const card = document.createElement('div');
         card.className = 'template-card';
-        card.setAttribute('data-id', t.id);
-        card.setAttribute('data-category', t.category);
+        card.setAttribute('data-id', template.id);
+        card.setAttribute('data-category', template.category);
+
         card.innerHTML = `
-            <div class="template-card-inner">
-                <div class="template-header">
-                    <h4 class="template-name">${t.name}</h4>
-                    <span class="template-category">${getCategoryName(t.category)}</span>
+            <div class="tc-accent-bar"></div>
+            <div class="tc-body">
+                <div class="tc-header">
+                    <div class="tc-category-badge">
+                        <i class="fas ${getCategoryIcon(template.category)}"></i>
+                        ${getCategoryName(template.category)}
+                    </div>
+                    <span class="tc-used-badge">${usedCount}×</span>
                 </div>
-                <div class="template-content${templatesHidden ? ' hidden' : ''}">${t.content}</div>
-                <div class="template-footer">
-                    <span class="usage-count">Digunakan: <strong>${used}</strong>×</span>
-                    <button class="btn-copy" data-id="${t.id}"><i class="fas fa-copy"></i> Copy</button>
-                </div>
+                <h4 class="tc-name">${template.name}</h4>
+                <div class="tc-preview ${templatesHidden ? '' : 'hidden'}">${template.content.trim().substring(0, 120)}${template.content.length > 120 ? '...' : ''}</div>
+                <div class="tc-content ${templatesHidden ? 'hidden' : ''}">${template.content}</div>
+            </div>
+            <div class="tc-footer">
+                <span class="tc-tap-hint"><i class="fas fa-hand-pointer"></i> Tap to copy</span>
+                <button class="tc-copy-btn" data-id="${template.id}">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
             </div>
         `;
         grid.appendChild(card);
     });
+
     addTemplateEventListeners();
 }
 
 function addTemplateEventListeners() {
-    document.querySelectorAll('.btn-copy').forEach(btn => {
+    document.querySelectorAll('.tc-copy-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             copyTemplate(this.getAttribute('data-id'));
@@ -587,7 +611,7 @@ function addTemplateEventListeners() {
     });
     document.querySelectorAll('.template-card').forEach(card => {
         card.addEventListener('click', function(e) {
-            if (!e.target.closest('.btn-copy')) copyTemplate(this.getAttribute('data-id'));
+            if (!e.target.closest('.tc-copy-btn')) copyTemplate(this.getAttribute('data-id'));
         });
     });
 }
@@ -621,13 +645,13 @@ function handleCopySuccess(id, name) {
     localStorage.setItem(`template-${id}-used`, n);
     const card = document.querySelector(`.template-card[data-id="${id}"]`);
     if (card) {
-        const u = card.querySelector('.usage-count strong');
-        if (u) u.textContent = n;
-        card.classList.add('copied','pulse');
-        setTimeout(() => card.classList.remove('copied','pulse'), 800);
+        const badge = card.querySelector('.tc-used-badge');
+        if (badge) badge.textContent = n + '×';
+        card.classList.add('copied');
+        setTimeout(() => card.classList.remove('copied'), 1200);
     }
     updateStats();
-    showToast(`✅ "${name}" dicopy!`);
+    showToast(`✅ "${name}" dicopy ke clipboard! 📋`);
 }
 
 function fallbackCopy(text, id, name) {
@@ -639,22 +663,33 @@ function fallbackCopy(text, id, name) {
     finally { document.body.removeChild(ta); }
 }
 
-// ==================== SEARCH ====================
+// ==================== SEARCH — dari versi 2 ====================
 function initializeSearch() {
     document.getElementById('searchInput').addEventListener('input', function() {
         const q = this.value.toLowerCase().trim();
         document.querySelectorAll('.template-card').forEach(card => {
-            if (!q) { card.style.display = ''; return; }
-            const name = card.querySelector('.template-name').textContent.toLowerCase();
-            const content = card.querySelector('.template-content').textContent.toLowerCase();
-            card.style.display = (name.includes(q) || content.includes(q)) ? '' : 'none';
+            if (!q) {
+                card.style.display = activeCategory === 'all' || card.getAttribute('data-category') === activeCategory ? '' : 'none';
+                return;
+            }
+            const name = card.querySelector('.tc-name').textContent.toLowerCase();
+            const content = card.querySelector('.tc-content').textContent.toLowerCase();
+            const matchSearch = name.includes(q) || content.includes(q);
+            const matchCat = activeCategory === 'all' || card.getAttribute('data-category') === activeCategory;
+            card.style.display = (matchSearch && matchCat) ? '' : 'none';
         });
     });
 }
 
-function filterTemplatesByCategory(cat) {
+function filterTemplatesByCategory(category) {
+    activeCategory = category;
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
     document.querySelectorAll('.template-card').forEach(card => {
-        card.style.display = (cat === 'all' || card.getAttribute('data-category') === cat) ? '' : 'none';
+        const matchCat = category === 'all' || card.getAttribute('data-category') === category;
+        const name = card.querySelector('.tc-name').textContent.toLowerCase();
+        const content = card.querySelector('.tc-content').textContent.toLowerCase();
+        const matchSearch = !q || name.includes(q) || content.includes(q);
+        card.style.display = (matchCat && matchSearch) ? '' : 'none';
     });
 }
 
@@ -674,21 +709,24 @@ function initializeTheme() {
     }
 }
 
-// ==================== TOGGLE TEMPLATES ====================
+// ==================== TOGGLE TEMPLATES — dari versi 2 ====================
 function toggleAllTemplates() {
     const grid = document.getElementById('templatesGrid');
     const btn = document.getElementById('toggleAllBtn');
     templatesHidden = !templatesHidden;
+
     if (templatesHidden) {
         grid.classList.add('hidden');
         btn.innerHTML = '<i class="fas fa-eye"></i><span>Tampilkan</span>';
-        document.querySelectorAll('.template-content').forEach(c => { c.classList.remove('expanded'); c.classList.add('hidden'); });
-        showToast('Template disembunyikan');
+        document.querySelectorAll('.tc-preview').forEach(c => c.classList.remove('hidden'));
+        document.querySelectorAll('.tc-content').forEach(c => c.classList.add('hidden'));
+        showToast('👁️ Semua template disembunyikan');
     } else {
         grid.classList.remove('hidden');
         btn.innerHTML = '<i class="fas fa-eye-slash"></i><span>Sembunyikan</span>';
-        document.querySelectorAll('.template-content').forEach(c => c.classList.remove('hidden'));
-        showToast('Template ditampilkan');
+        document.querySelectorAll('.tc-preview').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.tc-content').forEach(c => c.classList.remove('hidden'));
+        showToast('👁️ Semua template ditampilkan');
     }
 }
 
@@ -711,22 +749,29 @@ function showStats() {
 // ==================== TOAST ====================
 function showToast(msg) {
     const t = document.getElementById('toast');
-    if (t._tid) clearTimeout(t._tid);
+    if (t.timeoutId) clearTimeout(t.timeoutId);
     t.textContent = msg;
     t.classList.add('show');
-    t._tid = setTimeout(() => t.classList.remove('show'), 3000);
+    t.timeoutId = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ==================== QUICK REPLY FAB ====================
-function copyQuickReply() {
-    const text = 'Tunggu ya kak, mimin cek dulu! 😊';
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showToast('✅ Quick reply dicopy!'));
+// ==================== TOOLS TABS ====================
+function switchToolTab(tab) {
+    const paneBackup  = document.getElementById('paneBackup');
+    const paneInvoice = document.getElementById('paneInvoice');
+    const tabBackup   = document.getElementById('tabBackup');
+    const tabInvoice  = document.getElementById('tabInvoice');
+
+    if (tab === 'backup') {
+        paneBackup.style.display  = 'block';
+        paneInvoice.style.display = 'none';
+        tabBackup.classList.add('active');
+        tabInvoice.classList.remove('active');
     } else {
-        const ta = document.createElement('textarea'); ta.value = text;
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta);
-        showToast('✅ Quick reply dicopy!');
+        paneBackup.style.display  = 'none';
+        paneInvoice.style.display = 'block';
+        tabInvoice.classList.add('active');
+        tabBackup.classList.remove('active');
     }
 }
 
@@ -739,13 +784,9 @@ function initializeScrollButtons() {
         window.scrollTo({ top:0, behavior:'smooth' });
         showToast('🏠 Kembali ke atas');
     });
-    document.getElementById('scrollToBackupFab').addEventListener('click', () => {
-        document.querySelector('.backup-formatter-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    document.getElementById('scrollToToolsFab').addEventListener('click', () => {
+        document.querySelector('.tools-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
     });
-    document.getElementById('scrollToInvoiceFab').addEventListener('click', () => {
-        document.querySelector('.invoice-maker-section')?.scrollIntoView({ behavior:'smooth', block:'start' });
-    });
-    document.getElementById('quickCopyFab').addEventListener('click', copyQuickReply);
 }
 
 // ==================== BACKUP CODE FORMATTER ====================
@@ -785,7 +826,6 @@ function extractBackupCodes(text) {
         return codes.length >= 5;
     };
 
-    // Strategi 1: label "code back up X:"
     const labelPat = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan|cadangan)|bc)\s*\d*\s*[:\-=]?\s*/i;
     for (const line of lines) {
         if (!labelPat.test(line)) continue;
@@ -794,21 +834,18 @@ function extractBackupCodes(text) {
     }
     if (codes.length >= 5) return codes;
 
-    // Strategi 2: "1. kode" atau "1) kode"
     for (const line of lines) {
         const m = line.match(/^\s*\d+[.)]\s*([a-z0-9]{9})\s*$/i);
         if (m && addCode(m[1]) && codes.length >= 5) return codes;
     }
     if (codes.length >= 5) return codes;
 
-    // Strategi 3: satu token per baris
     for (const line of lines) {
         const t = line.trim().replace(/^[-•·*\s]+/, '').trim();
         if (/^[a-z0-9]{9}$/i.test(t) && addCode(t) && codes.length >= 5) return codes;
     }
     if (codes.length >= 5) return codes;
 
-    // Strategi 4: kode dalam satu baris dipisah spasi (skip baris instruksi)
     for (const line of lines) {
         const isInstruction = /(?:cara|klik|login|akses|pilih|salin|kirim|jangan|supaya|proses|wajib|minimal|backup|roblox|generate|settings|security|transaksi|silahkan|silakan|menggunakan)\b/i.test(line);
         if (isInstruction) continue;
@@ -874,7 +911,6 @@ const INV_PRICELIST = [
     7000, 7500, 8000, 8500, 9000, 9500, 10000, 450, 2200
 ];
 
-// Kata 9 huruf dari template yang bisa nyasar jadi kode backup
 const INV_WORD_BLOCK = new Set([
     "dimainkan","pemulihan","pengisian","prosesnya","transaksi"
 ]);
@@ -884,7 +920,6 @@ function invCloseModal() { document.getElementById('invModalOverlay').classList.
 function invCloseModalOutside(e) { if (e.target === document.getElementById('invModalOverlay')) invCloseModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { invCloseModal(); addressModalClose(); } });
 
-// Cek apakah token adalah backup code Roblox (selalu tepat 9 karakter)
 function invIsLikelyCode(token) {
     const t = token.toLowerCase().trim().replace(/[`'"]/g, '');
     if (t.length !== 9) return false;
@@ -894,7 +929,6 @@ function invIsLikelyCode(token) {
     return true;
 }
 
-// Format hasil robux: "1000prem" → "1000R + Premium", "1500" → "1500 Robux"
 function invFormatRobux(raw) {
     if (!raw) return '';
     const s = raw.trim();
@@ -935,7 +969,6 @@ function invFormatRobux(raw) {
     return best + ' Robux';
 }
 
-// Extract username dari teks customer
 function invExtractUsername(text) {
     const labelPat =
         /(?:🫧\s*)?(?:username|user\s*name|roblox\s*(?:id|username|user)|nama\s*akun|akun|usn|usr|user|id)\s*(?:\(@\)\s*)?[:\-–=]\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/gi;
@@ -960,7 +993,6 @@ function invExtractUsername(text) {
     return '';
 }
 
-// Extract password dari teks customer
 function invExtractPassword(text) {
     const labelPat =
         /(?:🫧\s*)?(?:password|pasword|pass\s*word|kata\s*sandi|kunci|sandi|pass|pw|pin)\s*[:\-–=]\s*([^\n\r🫧🌸✨👤🔑🛡❗️🔍⚠️📌]+)/gi;
@@ -983,7 +1015,6 @@ function invExtractPassword(text) {
     return '';
 }
 
-// Extract jumlah robux dari teks customer
 function invExtractRobux(text) {
     const safeLines = text.split('\n').filter(l =>
         !/(?:backup|code\s*back|kode\s*(?:backup|bc|bekap|pemulihan|cadangan)|sisa\s*rob)/i.test(l)
@@ -992,7 +1023,7 @@ function invExtractRobux(text) {
 
     const orderLines = safeLines.filter(l =>
         /(?:order|beli|jumlah|nominal|topup|mau|pengen|butuh|request)/i.test(l) ||
-        /(?:\d\s*r?\s*(?:\+\s*)?prem|prem\b.*\d|\d+\s*prem)/i.test(l)  // "1000r prem", "1000prem", "prem 1000"
+        /(?:\d\s*r?\s*(?:\+\s*)?prem|prem\b.*\d|\d+\s*prem)/i.test(l)
     );
     const isPrem = /prem(?:ium)?/i.test(orderLines.join('\n'));
 
@@ -1039,7 +1070,6 @@ function invExtractRobux(text) {
     return '';
 }
 
-// Extract backup codes dari teks customer
 function invExtractCodes(text) {
     if (!text) return [];
     const codes = [];
@@ -1054,7 +1084,6 @@ function invExtractCodes(text) {
         return false;
     };
 
-    // Strategi 1: label "code back up X:" / "kode pemulihan X:"
     const backupLabelPat = /(?:code\s*back\s*up|backup\s*kode|kode\s*(?:backup|pemulihan|cadangan)|cadangan|bc)\s*\d*\s*[:\-–=]?\s*/i;
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -1074,21 +1103,18 @@ function invExtractCodes(text) {
     }
     if (codes.length >= 5) return codes.slice(0, 5);
 
-    // Strategi 2: "1. kode" atau "1) kode"
     for (const line of lines) {
         const m = line.match(/^\s*\d+[.)]\s*([a-z0-9]{9})\s*$/i);
         if (m && addCode(m[1]) && codes.length >= 5) return codes;
     }
     if (codes.length >= 5) return codes.slice(0, 5);
 
-    // Strategi 3: bullet/dash langsung ke kode
     for (const line of lines) {
         const m = line.match(/^\s*[-•·*]\s*([a-z0-9]{9})\s*$/i);
         if (m && addCode(m[1]) && codes.length >= 5) return codes;
     }
     if (codes.length >= 5) return codes.slice(0, 5);
 
-    // Strategi 4: scan token (skip baris instruksi & baris CAPSLOCK)
     const filteredLines = lines.filter(l =>
         !/(?:username|usn|usr|user|password|pasword|pw|pass|order|nominal|jumlah|sisa|bukti|payment|format|topup|harap|wajib|tuliskan|minimal|roblox|mimin|admin|cara|klik|login|akses|pilih|salin|kirim|jangan|supaya|proses|biar)\b/i.test(l) &&
         !/^[A-Z\s!?,.-]+$/.test(l.trim())
@@ -1100,9 +1126,6 @@ function invExtractCodes(text) {
     return codes.slice(0, 5);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UI HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 function invCheckCodes() {
     const codes = invExtractCodes(document.getElementById('fCodes').value);
     const found = document.getElementById('invCodesFound');
@@ -1131,9 +1154,6 @@ function invUpdatePills() {
     document.getElementById('invParsedPreview').classList.add('show');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTO PARSE & GENERATE
-// ─────────────────────────────────────────────────────────────────────────────
 function invAutoParseAndGenerate() {
     const rawInput = document.getElementById('invRawPaste').value;
     if (!rawInput.trim()) { showToast('❌ Teks kosong!'); return; }
@@ -1143,12 +1163,10 @@ function invAutoParseAndGenerate() {
     document.getElementById('fRobux').value = '';
     document.getElementById('fCodes').value = '';
 
-    // Hapus timestamp chat: [3/13/2026 1:53 PM] Nama.:
     let cleaned = rawInput
         .replace(/\[\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]\s*[^:\n]+:\s*/g, '')
         .trim();
 
-    // Hapus baris instruksi template (mengandung frasa instruksi bukan data customer)
     cleaned = cleaned.split('\n').filter(l => {
         const isInstruction =
             /harap\s+diisi/i.test(l) ||
@@ -1179,9 +1197,6 @@ function invAutoParseAndGenerate() {
     invGenerateInvoice();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CLEAR & PASTE
-// ─────────────────────────────────────────────────────────────────────────────
 function invClearRaw() {
     document.getElementById('invRawPaste').value = '';
     document.getElementById('fUser').value  = '';
@@ -1206,9 +1221,6 @@ async function invDoPaste() {
     } catch { showToast('❌ Gagal baca clipboard. Izinkan akses dulu.'); }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GENERATE & COPY INVOICE
-// ─────────────────────────────────────────────────────────────────────────────
 let invLastInvoiceText = '';
 
 function invGenerateInvoice() {
@@ -1261,7 +1273,7 @@ function invCopyInvoice() {
     }
 }
 
-// ==================== RESELLER ====================
+// ==================== RESELLER — dari versi 2 ====================
 const nominalData = [
     { amount: "80robux",    price: "Rp 14.700" },
     { amount: "80robux 2",  price: "Rp 29.400" },
@@ -1338,155 +1350,171 @@ const resellerData = [
     { displayName: "♡! ﹏", username: "@THOTIANA", color: "#8B5CF6" }
 ];
 
-let rsState = { command: 'proses', nominal: null, reseller: null };
+let rsState = {
+    command: 'proses',
+    nominal: null,
+    reseller: null
+};
 
 function initializeResellerBot() {
-    const section = document.querySelector('.reseller-section');
-    const existingContainer = section.querySelector('.reseller-container');
-    if (existingContainer) existingContainer.remove();
-
-    const container = document.createElement('div');
-    container.className = 'reseller-container';
-    container.innerHTML = `
-        <div class="reseller-topbar">
-            <span class="reseller-topbar-label">Command:</span>
-            <div class="cmd-tabs">
-                <button class="cmd-tab active" data-cmd="proses">/proses</button>
-                <button class="cmd-tab" data-cmd="addsaldo">/addsaldo</button>
-                <button class="cmd-tab" data-cmd="kurangsaldo">/kurangsaldo</button>
-            </div>
-        </div>
-        <div class="reseller-body">
-            <div class="reseller-panel-nominal" id="rsNominalPanel">
-                <div class="reseller-panel-header">Pilih Nominal</div>
-                <div class="nominal-chips-wrap">
-                    <div class="nominal-chips" id="rsNominalChips"></div>
-                </div>
-            </div>
-            <div class="reseller-panel-reseller">
-                <div class="reseller-search-wrap">
-                    <i class="fas fa-search"></i>
-                    <input class="reseller-search" id="rsSearch" placeholder="Cari nama atau username reseller...">
-                </div>
-                <div class="reseller-list-wrap">
-                    <div class="reseller-list" id="rsResellerList"></div>
-                </div>
-            </div>
-        </div>
-        <div class="reseller-result-bar">
-            <div class="reseller-result-preview" id="rsPreview">Pilih nominal & reseller dulu…</div>
-            <button class="reseller-reset-btn" id="rsResetBtn"><i class="fas fa-redo"></i> Reset</button>
-            <button class="reseller-copy-btn" id="rsCopyBtn"><i class="fas fa-copy"></i> Copy Command</button>
-        </div>
-    `;
-    section.appendChild(container);
-
-    const nominalEl = document.getElementById('rsNominalChips');
-    nominalData.forEach(n => {
-        const chip = document.createElement('div');
-        chip.className = 'nominal-chip';
-        chip.setAttribute('data-amount', n.amount);
-        chip.innerHTML = `<span class="nominal-chip-name">${n.amount}</span><span class="nominal-chip-price">${n.price}</span>`;
-        chip.addEventListener('click', function() {
-            document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            rsState.nominal = n.amount;
-            updateRsResult();
-        });
-        nominalEl.appendChild(chip);
-    });
-
-    renderResellerList(resellerData);
-
-    document.getElementById('rsSearch').addEventListener('input', function() {
-        const q = this.value.toLowerCase();
-        renderResellerList(resellerData.filter(r =>
-            r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q)
-        ));
-    });
-
-    document.querySelectorAll('.cmd-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.cmd-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            rsState.command = this.getAttribute('data-cmd');
-            rsState.nominal = null;
-            document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
-            document.getElementById('rsNominalPanel').style.display = rsState.command === 'proses' ? '' : 'none';
-            updateRsResult();
-        });
-    });
-
-    document.getElementById('rsResetBtn').addEventListener('click', resetReseller);
-    document.getElementById('rsCopyBtn').addEventListener('click', copyResellerCmd);
+    renderResellerUI();
 }
 
-function renderResellerList(data) {
-    const list = document.getElementById('rsResellerList');
-    list.innerHTML = '';
-    data.forEach(r => {
-        const item = document.createElement('div');
-        item.className = 'reseller-item' + (rsState.reseller === r.username ? ' selected' : '');
-        item.innerHTML = `
-            <div class="reseller-item-avatar" style="background:${r.color}">${[...r.displayName.trim()][0]||'?'}</div>
-            <div class="reseller-item-info">
-                <div class="reseller-item-name">${r.displayName}</div>
-                <div class="reseller-item-username">${r.username}</div>
+function renderResellerUI() {
+    const container = document.querySelector('.reseller-container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="rs-tabs">
+            <button class="rs-tab ${rsState.command === 'proses' ? 'active' : ''}" data-cmd="proses">
+                <i class="fas fa-play-circle"></i> /proses
+            </button>
+            <button class="rs-tab ${rsState.command === 'addsaldo' ? 'active' : ''}" data-cmd="addsaldo">
+                <i class="fas fa-plus-circle"></i> /addsaldo
+            </button>
+            <button class="rs-tab ${rsState.command === 'kurangsaldo' ? 'active' : ''}" data-cmd="kurangsaldo">
+                <i class="fas fa-minus-circle"></i> /kurangsaldo
+            </button>
+        </div>
+
+        <div class="rs-section ${rsState.command !== 'proses' ? 'hidden' : ''}">
+            <div class="rs-section-label"><i class="fas fa-coins"></i> Pilih Nominal</div>
+            <div class="rs-nominal-wrap">
+                ${nominalData.map(n => `
+                    <button class="rs-nominal-chip ${rsState.nominal === n.amount ? 'selected' : ''}" data-amount="${n.amount}">
+                        <span class="rs-chip-amount">${n.amount}</span>
+                        <span class="rs-chip-price">${n.price}</span>
+                    </button>
+                `).join('')}
             </div>
-            <i class="fas fa-check-circle reseller-item-check"></i>
-        `;
-        item.addEventListener('click', function() {
-            rsState.reseller = r.username;
-            document.querySelectorAll('.reseller-item').forEach(i => i.classList.remove('selected'));
+        </div>
+
+        <div class="rs-section">
+            <div class="rs-section-label"><i class="fas fa-users"></i> Pilih Reseller</div>
+            <div class="rs-search-wrap">
+                <i class="fas fa-search rs-search-icon"></i>
+                <input type="text" class="rs-search-input" id="rsSearchInput" placeholder="Cari nama atau username...">
+                <button class="rs-clear-search" id="rsClearSearch" style="display:none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="rs-reseller-grid" id="rsResellerGrid">
+                ${resellerData.map((r, i) => `
+                    <button class="rs-reseller-card ${rsState.reseller === r.username ? 'selected' : ''}"
+                            data-username="${r.username}" data-index="${i}">
+                        <div class="rs-avatar" style="background:${r.color}">${[...r.displayName.trim()][0]||'?'}</div>
+                        <div class="rs-rinfo">
+                            <div class="rs-rname">${r.displayName}</div>
+                            <div class="rs-rusername">${r.username}</div>
+                        </div>
+                        <i class="fas fa-check rs-check-icon"></i>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+
+        <div class="rs-result-bar ${(rsState.reseller && (rsState.command !== 'proses' || rsState.nominal)) ? 'active' : ''}" id="rsResultBar">
+            <div class="rs-result-preview" id="rsResultPreview">—</div>
+            <button class="rs-copy-btn" id="rsCopyBtn">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+    `;
+
+    container.querySelectorAll('.rs-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            rsState.command = this.dataset.cmd;
+            rsState.nominal = null;
+            rsState.reseller = null;
+            renderResellerUI();
+        });
+    });
+
+    container.querySelectorAll('.rs-nominal-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            rsState.nominal = this.dataset.amount;
+            container.querySelectorAll('.rs-nominal-chip').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
             updateRsResult();
         });
-        list.appendChild(item);
     });
+
+    container.querySelectorAll('.rs-reseller-card').forEach(card => {
+        card.addEventListener('click', function() {
+            rsState.reseller = this.dataset.username;
+            container.querySelectorAll('.rs-reseller-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            updateRsResult();
+        });
+    });
+
+    const searchInput = document.getElementById('rsSearchInput');
+    const clearBtn = document.getElementById('rsClearSearch');
+    searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        clearBtn.style.display = q ? 'flex' : 'none';
+        filterResellers(q);
+    });
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        this.style.display = 'none';
+        filterResellers('');
+    });
+
+    document.getElementById('rsCopyBtn').addEventListener('click', copyRsResult);
+    updateRsResult();
+}
+
+function filterResellers(q) {
+    document.querySelectorAll('.rs-reseller-card').forEach(card => {
+        const idx = parseInt(card.dataset.index);
+        const r = resellerData[idx];
+        if (!q) { card.style.display = 'flex'; return; }
+        const match = r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q);
+        card.style.display = match ? 'flex' : 'none';
+    });
+}
+
+function buildRsCommand() {
+    if (!rsState.reseller) return null;
+    if (rsState.command === 'proses') {
+        if (!rsState.nominal) return null;
+        return `/proses ${rsState.nominal} ${rsState.reseller}`;
+    }
+    return `/${rsState.command} ${rsState.reseller}`;
 }
 
 function updateRsResult() {
-    const preview = document.getElementById('rsPreview');
-    const copyBtn = document.getElementById('rsCopyBtn');
-    const needNominal = rsState.command === 'proses';
-    const ready = (!needNominal || rsState.nominal) && rsState.reseller;
-    if (ready) {
-        const cmd = needNominal
-            ? `/${rsState.command} ${rsState.nominal} ${rsState.reseller}`
-            : `/${rsState.command} ${rsState.reseller}`;
+    const cmd = buildRsCommand();
+    const bar = document.getElementById('rsResultBar');
+    const preview = document.getElementById('rsResultPreview');
+    if (!bar || !preview) return;
+
+    if (cmd) {
         preview.textContent = cmd;
-        preview.classList.add('ready');
-        copyBtn.classList.add('ready');
+        bar.classList.add('active');
     } else {
-        preview.textContent = !rsState.reseller && needNominal && !rsState.nominal
-            ? 'Pilih nominal & reseller dulu…'
-            : needNominal && !rsState.nominal ? 'Pilih nominal dulu…' : 'Pilih reseller dulu…';
-        preview.classList.remove('ready');
-        copyBtn.classList.remove('ready');
+        let hint = '—';
+        if (!rsState.reseller && rsState.command === 'proses' && !rsState.nominal) hint = 'Pilih nominal & reseller';
+        else if (rsState.command === 'proses' && !rsState.nominal) hint = 'Pilih nominal dulu';
+        else if (!rsState.reseller) hint = 'Pilih reseller dulu';
+        preview.textContent = hint;
+        bar.classList.remove('active');
     }
 }
 
-function copyResellerCmd() {
-    if (!document.getElementById('rsCopyBtn').classList.contains('ready')) return;
-    const text = document.getElementById('rsPreview').textContent;
+function copyRsResult() {
+    const cmd = buildRsCommand();
+    if (!cmd) { showToast('❌ Pilih nominal & reseller dulu!'); return; }
+    const doCopy = () => {
+        const ta = document.createElement('textarea');
+        ta.value = cmd; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        showToast(`✅ Command dicopy: ${cmd}`);
+    };
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showToast(`✅ Dicopy: ${text}`)).catch(() => {
-            const ta = document.createElement('textarea'); ta.value = text;
-            ta.style.cssText = 'position:fixed;left:-9999px';
-            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-            showToast(`✅ Dicopy: ${text}`);
-        });
-    }
-}
-
-function resetReseller() {
-    rsState = { command: rsState.command, nominal: null, reseller: null };
-    document.querySelectorAll('.nominal-chip').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.reseller-item').forEach(i => i.classList.remove('selected'));
-    document.getElementById('rsSearch').value = '';
-    renderResellerList(resellerData);
-    updateRsResult();
-    showToast('🔄 Reset!');
+        navigator.clipboard.writeText(cmd).then(() => showToast(`✅ Command dicopy: ${cmd}`)).catch(doCopy);
+    } else { doCopy(); }
 }
 
 // ==================== ADDRESS MODAL ====================
