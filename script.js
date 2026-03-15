@@ -1345,24 +1345,16 @@ function invTriggerUserLookup(username) {
     invUserLookupTimer = setTimeout(async () => {
         const clean = username.trim().replace(/\s+/g, '');
         let attempt = 0;
-        const delays = [0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 20000];
+        const delays = [0, 500, 1000, 1500, 2000];
 
         while (!cancelled) {
-            const delay = attempt < delays.length ? delays[attempt] : 20000;
+            const delay = attempt < delays.length ? delays[attempt] : 2000;
 
-            // Countdown saat delay
             if (delay > 0) {
-                let remaining = delay / 1000;
-                if (loadingSpan) loadingSpan.textContent = `Mencoba lagi dalam ${remaining}s...`;
                 await new Promise(resolve => {
-                    let elapsed = 0;
-                    const tick = setInterval(() => {
-                        if (cancelled) { clearInterval(tick); resolve(); return; }
-                        elapsed += 1000;
-                        remaining--;
-                        if (loadingSpan && remaining > 0) loadingSpan.textContent = `Mencoba lagi dalam ${remaining}s...`;
-                        if (elapsed >= delay) { clearInterval(tick); resolve(); }
-                    }, 1000);
+                    const t = setTimeout(resolve, delay);
+                    const check = setInterval(() => { if (cancelled) { clearTimeout(t); clearInterval(check); resolve(); } }, 100);
+                    setTimeout(() => clearInterval(check), delay + 100);
                 });
             }
 
@@ -1412,15 +1404,30 @@ function invTriggerUserLookup(username) {
                 }
 
                 attempt++;
+                // Kalau sudah 5x gagal, stop
+                if (attempt >= 5) {
+                    if (!cancelled) {
+                        document.getElementById('invUserErrTxt').textContent = 'Gagal mengecek, coba lagi';
+                        lookup.style.borderColor = 'var(--warning)';
+                        show(err);
+                    }
+                    return;
+                }
             } catch(e) {
                 if (cancelled) break;
                 attempt++;
+                if (attempt >= 5) {
+                    if (!cancelled) {
+                        document.getElementById('invUserErrTxt').textContent = 'Gagal mengecek, coba lagi';
+                        lookup.style.borderColor = 'var(--warning)';
+                        show(err);
+                    }
+                    return;
+                }
             }
         }
     }, 400);
 }
-
-function invResetUserLookup() {
     if (invLookupAbort) { invLookupAbort(); invLookupAbort = null; }
     clearTimeout(invUserLookupTimer);
     const empty   = document.getElementById('invUserEmpty');
