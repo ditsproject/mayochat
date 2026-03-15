@@ -1258,26 +1258,54 @@ document.addEventListener('visibilitychange', () => {
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
     const clean = username.trim().replace(/\s+/g, '');
-    try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(ROBLOX_PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usernames: [clean] }),
-            signal: controller.signal,
-        });
-        clearTimeout(timer);
-        if (!res.ok) throw new Error('Worker error ' + res.status);
-        const data = await res.json();
-        if (data?.data && data.data.length > 0) {
-            const user = data.data[0];
-            return { ok: true, id: user.id, name: user.name };
+
+    let attempt = 0;
+    const delays = [0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 20000];
+
+    while (true) {
+        const delay = attempt < delays.length ? delays[attempt] : delays[delays.length - 1];
+        if (delay > 0) await new Promise(r => setTimeout(r, delay));
+
+        // Cek apakah lookup sudah dibatalkan saat delay
+        try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 8000);
+
+            const res = await fetch(ROBLOX_PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usernames: [clean] }),
+                signal: controller.signal,
+            });
+            clearTimeout(timer);
+
+            if (!res.ok) {
+                attempt++;
+                continue; // retry
+            }
+
+            const data = await res.json();
+
+            if (data?.data && data.data.length > 0) {
+                const user = data.data[0];
+                return { ok: true, id: user.id, name: user.name };
+            }
+
+            // Kalau response valid tapi kosong = user memang tidak ada
+            if (res.ok && data && !data.error) {
+                return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
+            }
+
+            // Ada error dari server = retry
+            attempt++;
+
+        } catch(e) {
+            // Abort = dibatalkan dari luar, stop retry
+            if (e.name === 'AbortError' && attempt === 0) {
+                return { ok: 'warn', msg: 'Timeout' };
+            }
+            attempt++;
         }
-        return { ok: false, msg: `"${clean}" tidak ditemukan` };
-    } catch(e) {
-        if (e.name === 'AbortError') return { ok: 'warn', msg: 'Timeout, coba lagi' };
-        return { ok: 'warn', msg: 'Koneksi bermasalah' };
     }
 }
 
@@ -1298,7 +1326,6 @@ function invTriggerUserLookup(username) {
         if (el) el.style.display = 'flex';
     };
 
-    // Batalkan hasil request sebelumnya
     if (invLookupAbort) { invLookupAbort(); invLookupAbort = null; }
     clearTimeout(invUserLookupTimer);
 
@@ -1309,35 +1336,88 @@ function invTriggerUserLookup(username) {
     }
 
     show(loading);
+    const loadingSpan = loading ? loading.querySelector('span') : null;
+    if (loadingSpan) loadingSpan.textContent = 'Mengecek username...';
 
     let cancelled = false;
     invLookupAbort = () => { cancelled = true; };
 
     invUserLookupTimer = setTimeout(async () => {
-        const result = await checkRobloxUsername(username);
-        if (cancelled) return;
-        if (result.ok === true) {
-            document.getElementById('invUserName').textContent = result.name;
-            document.getElementById('invUserAvatar').src =
-                `${ROBLOX_PROXY_URL}/avatar?userId=${result.id}`;
-            const premIcon = document.getElementById('invUserPremium');
-            if (premIcon) premIcon.style.display = 'none';
-            lookup.style.borderColor = 'var(--success)';
-            show(found);
-            fetch(`${ROBLOX_PROXY_URL}/premium?userId=${result.id}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (!cancelled && premIcon && data.isPremium === true) {
-                        premIcon.style.display = 'inline-block';
+        const clean = username.trim().replace(/\s+/g, '');
+        let attempt = 0;
+        const delays = [0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 20000];
+
+        while (!cancelled) {
+            const delay = attempt < delays.length ? delays[attempt] : 20000;
+
+            // Countdown saat delay
+            if (delay > 0) {
+                let remaining = delay / 1000;
+                if (loadingSpan) loadingSpan.textContent = `Mencoba lagi dalam ${remaining}s...`;
+                await new Promise(resolve => {
+                    let elapsed = 0;
+                    const tick = setInterval(() => {
+                        if (cancelled) { clearInterval(tick); resolve(); return; }
+                        elapsed += 1000;
+                        remaining--;
+                        if (loadingSpan && remaining > 0) loadingSpan.textContent = `Mencoba lagi dalam ${remaining}s...`;
+                        if (elapsed >= delay) { clearInterval(tick); resolve(); }
+                    }, 1000);
+                });
+            }
+
+            if (cancelled) break;
+            if (loadingSpan) loadingSpan.textContent = attempt === 0 ? 'Mengecek username...' : `Mengecek... (percobaan ${attempt + 1})`;
+
+            try {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 8000);
+                const res = await fetch(ROBLOX_PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernames: [clean] }),
+                    signal: controller.signal,
+                });
+                clearTimeout(timer);
+                if (cancelled) break;
+
+                if (!res.ok) { attempt++; continue; }
+
+                const data = await res.json();
+                if (cancelled) break;
+
+                if (data?.data && data.data.length > 0) {
+                    const user = data.data[0];
+                    document.getElementById('invUserName').textContent = user.name;
+                    document.getElementById('invUserAvatar').src = `${ROBLOX_PROXY_URL}/avatar?userId=${user.id}`;
+                    const premIcon = document.getElementById('invUserPremium');
+                    if (premIcon) premIcon.style.display = 'none';
+                    lookup.style.borderColor = 'var(--success)';
+                    show(found);
+                    fetch(`${ROBLOX_PROXY_URL}/premium?userId=${user.id}`)
+                        .then(r => r.json())
+                        .then(d => { if (!cancelled && premIcon && d.isPremium === true) premIcon.style.display = 'inline-block'; })
+                        .catch(() => {});
+                    return;
+                }
+
+                // Response valid kosong = user tidak ada di Roblox
+                if (res.ok && data && !data.error) {
+                    if (!cancelled) {
+                        document.getElementById('invUserErrTxt').textContent = `"${clean}" tidak ditemukan di Roblox`;
+                        lookup.style.borderColor = 'var(--danger)';
+                        show(err);
                     }
-                })
-                .catch(() => {});
-        } else {
-            document.getElementById('invUserErrTxt').textContent = result.msg;
-            lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
-            show(err);
+                    return;
+                }
+
+                attempt++;
+            } catch(e) {
+                if (cancelled) break;
+                attempt++;
+            }
         }
-    }, 600);
+    }, 400);
 }
 
 function invResetUserLookup() {
