@@ -1428,6 +1428,7 @@ function invTriggerUserLookup(username) {
         }
     }, 400);
 }
+function invResetUserLookup() {
     if (invLookupAbort) { invLookupAbort(); invLookupAbort = null; }
     clearTimeout(invUserLookupTimer);
     const empty   = document.getElementById('invUserEmpty');
