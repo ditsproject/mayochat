@@ -1247,6 +1247,11 @@ function warmUpWorker() {
     fetch(ROBLOX_PROXY_URL, { method: 'GET' }).catch(() => {});
 }
 
+// Re-warm Worker setiap kali tab aktif kembali (user balik ke tab)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') warmUpWorker();
+});
+
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
     const clean = username.trim().replace(/\s+/g, '');
