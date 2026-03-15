@@ -68,15 +68,13 @@ lalu mimin proses sesuai antrian ^,^`
         category: "order",
         content: `
 📌 Cara Order di Website
-Buka mayoblox.com/robux
+Buka https://mayoblox.com/robux/checkout/via-login
 Pakai Chrome atau Safari biar gak error.
 
-1. Pilih Robux via Login
-2. Klik Order via Website
-3. Isi: Usn, Pw, Kode Backup 
+1. Isi: Usn, Pw, Kode Backup 
 Masukkan nomor WhatsApp yang aktif (jangan asal)
-4. Ikuti tutorial di website
-5. Pilih nominal → bayar via QR`
+2. Ikuti tutorial di website
+3. Pilih nominal → bayar via QR`
     },
     {
         id: 8,
