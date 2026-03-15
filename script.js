@@ -620,7 +620,6 @@ function addTemplateEventListeners() {
 function handleQuickAction(type) {
     const map = {
         'order':1,'backup':4,'list':99,'error':7,'2step':23,
-        'qr':8,'queue':20,'prem':10,'thanks':14,'premium':15,
         'fix':25,'wrongpw':6,'estimation':9,'checklogin':2,
         'checkemail':3,'reset':11,'webproblem':21,'regencode':22,
         'gp':16,'gkmsk':5
@@ -1304,8 +1303,19 @@ function invTriggerUserLookup(username) {
             document.getElementById('invUserName').textContent = result.name;
             document.getElementById('invUserAvatar').src =
                 `${ROBLOX_PROXY_URL}/avatar?userId=${result.id}`;
+            const premIcon = document.getElementById('invUserPremium');
+            if (premIcon) premIcon.style.display = 'none';
             lookup.style.borderColor = 'var(--success)';
             show(found);
+            // Cek premium di background
+            fetch(`${ROBLOX_PROXY_URL}/premium?userId=${result.id}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (premIcon && data.isPremium === true) {
+                        premIcon.style.display = 'inline-block';
+                    }
+                })
+                .catch(() => {});
         } else {
             document.getElementById('invUserErrTxt').textContent = result.msg;
             lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
@@ -1326,6 +1336,8 @@ function invResetUserLookup() {
     [found, err, loading].forEach(e => { if(e) e.style.display = 'none'; });
     if (empty) empty.style.display = 'flex';
     lookup.style.borderColor = '';
+    const premIcon = document.getElementById('invUserPremium');
+    if (premIcon) premIcon.style.display = 'none';
 }
 
 function invGenerateInvoice() {

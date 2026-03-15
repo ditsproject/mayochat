@@ -875,6 +875,13 @@ body.dark .stat span { color: var(--text); }
 
 .inv-user-info { flex: 1; min-width: 0; }
 
+.inv-user-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
 .inv-user-name {
     font-size: 0.75rem;
     font-weight: 700;
@@ -887,6 +894,13 @@ body.dark .stat span { color: var(--text); }
 .inv-user-check {
     color: var(--success);
     font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.inv-user-premium {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
     flex-shrink: 0;
 }
 
