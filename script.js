@@ -1255,59 +1255,35 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') warmUpWorker();
 });
 
-// Cache hasil lookup - hanya simpan yang FOUND, bukan not found
-const invUsernameCache = new Map();
-
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
     const clean = username.trim().replace(/\s+/g, '');
-    const key = clean.toLowerCase();
-
-    // Cek cache hanya untuk hasil yang found
-    if (invUsernameCache.has(key)) {
-        return invUsernameCache.get(key);
-    }
-
-    const fetchWithTimeout = async (ms) => {
+    try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), ms);
-        try {
-            const res = await fetch(ROBLOX_PROXY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usernames: [clean] }),
-                signal: controller.signal,
-            });
-            clearTimeout(timer);
-            if (!res.ok) throw new Error('Worker error ' + res.status);
-            return await res.json();
-        } catch(e) {
-            clearTimeout(timer);
-            throw e;
+        const timer = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(ROBLOX_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usernames: [clean] }),
+            signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('Worker error ' + res.status);
+        const data = await res.json();
+        if (data?.data && data.data.length > 0) {
+            const user = data.data[0];
+            return { ok: true, id: user.id, name: user.name };
         }
-    };
-
-    for (let i = 0; i < 2; i++) {
-        try {
-            const data = await fetchWithTimeout(6000);
-            if (data?.data && data.data.length > 0) {
-                const user = data.data[0];
-                const result = { ok: true, id: user.id, name: user.name };
-                invUsernameCache.set(key, result); // cache HANYA kalau found
-                return result;
-            }
-            // Not found — TIDAK dicache, biar bisa dicoba lagi
-            return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
-        } catch(e) {
-            if (i === 1) return { ok: 'warn', msg: 'Koneksi lambat, coba lagi' };
-            await new Promise(r => setTimeout(r, 600));
-        }
+        return { ok: false, msg: `"${clean}" tidak ditemukan` };
+    } catch(e) {
+        if (e.name === 'AbortError') return { ok: 'warn', msg: 'Timeout, coba lagi' };
+        return { ok: 'warn', msg: 'Koneksi bermasalah' };
     }
 }
 
 // Live username lookup
 let invUserLookupTimer = null;
-let invLookupRunning = false;
+let invLookupAbort = null;
 
 function invTriggerUserLookup(username) {
     const empty   = document.getElementById('invUserEmpty');
@@ -1322,20 +1298,24 @@ function invTriggerUserLookup(username) {
         if (el) el.style.display = 'flex';
     };
 
-    if (!username || username.trim().length < 5) {
+    // Batalkan hasil request sebelumnya
+    if (invLookupAbort) { invLookupAbort(); invLookupAbort = null; }
+    clearTimeout(invUserLookupTimer);
+
+    if (!username || username.trim().length < 3) {
         show(empty);
         lookup.style.borderColor = '';
         return;
     }
 
-    clearTimeout(invUserLookupTimer);
     show(loading);
 
+    let cancelled = false;
+    invLookupAbort = () => { cancelled = true; };
+
     invUserLookupTimer = setTimeout(async () => {
-        if (invLookupRunning) return;
-        invLookupRunning = true;
         const result = await checkRobloxUsername(username);
-        invLookupRunning = false;
+        if (cancelled) return;
         if (result.ok === true) {
             document.getElementById('invUserName').textContent = result.name;
             document.getElementById('invUserAvatar').src =
@@ -1344,11 +1324,10 @@ function invTriggerUserLookup(username) {
             if (premIcon) premIcon.style.display = 'none';
             lookup.style.borderColor = 'var(--success)';
             show(found);
-            // Cek premium di background
             fetch(`${ROBLOX_PROXY_URL}/premium?userId=${result.id}`)
                 .then(r => r.json())
                 .then(data => {
-                    if (premIcon && data.isPremium === true) {
+                    if (!cancelled && premIcon && data.isPremium === true) {
                         premIcon.style.display = 'inline-block';
                     }
                 })
@@ -1358,11 +1337,11 @@ function invTriggerUserLookup(username) {
             lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
             show(err);
         }
-    }, 1200);
+    }, 600);
 }
 
 function invResetUserLookup() {
-    invLookupRunning = false;
+    if (invLookupAbort) { invLookupAbort(); invLookupAbort = null; }
     clearTimeout(invUserLookupTimer);
     const empty   = document.getElementById('invUserEmpty');
     const found   = document.getElementById('invUserFound');
