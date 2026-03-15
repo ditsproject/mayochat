@@ -1337,7 +1337,7 @@ function invTriggerUserLookup(username) {
 
     show(loading);
     const loadingSpan = loading ? loading.querySelector('span') : null;
-    if (loadingSpan) loadingSpan.textContent = 'Mengecek username...';
+    if (loadingSpan) loadingSpan.textContent = 'Mencari username...';
 
     let cancelled = false;
     invLookupAbort = () => { cancelled = true; };
