@@ -68,13 +68,15 @@ lalu mimin proses sesuai antrian ^,^`
         category: "order",
         content: `
 📌 Cara Order di Website
-Buka https://mayoblox.com/robux/checkout/via-login
+Buka mayoblox.com/robux
 Pakai Chrome atau Safari biar gak error.
 
-1. Isi: Usn, Pw, Kode Backup 
+1. Pilih Robux via Login
+2. Klik Order via Website
+3. Isi: Usn, Pw, Kode Backup 
 Masukkan nomor WhatsApp yang aktif (jangan asal)
-2. Ikuti tutorial di website
-3. Pilih nominal → bayar via QR`
+4. Ikuti tutorial di website
+5. Pilih nominal → bayar via QR`
     },
     {
         id: 8,
@@ -1253,16 +1255,17 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') warmUpWorker();
 });
 
-// Cache hasil lookup biar ga perlu hit Worker terus
+// Cache hasil lookup - hanya simpan yang FOUND, bukan not found
 const invUsernameCache = new Map();
 
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
-    const clean = username.trim().replace(/\s+/g, '').toLowerCase();
+    const clean = username.trim().replace(/\s+/g, '');
+    const key = clean.toLowerCase();
 
-    // Cek cache dulu
-    if (invUsernameCache.has(clean)) {
-        return invUsernameCache.get(clean);
+    // Cek cache hanya untuk hasil yang found
+    if (invUsernameCache.has(key)) {
+        return invUsernameCache.get(key);
     }
 
     const fetchWithTimeout = async (ms) => {
@@ -1284,22 +1287,20 @@ async function checkRobloxUsername(username) {
         }
     };
 
-    // Coba 1x dengan timeout 5 detik, kalau gagal retry 1x lagi
     for (let i = 0; i < 2; i++) {
         try {
-            const data = await fetchWithTimeout(5000);
+            const data = await fetchWithTimeout(6000);
             if (data?.data && data.data.length > 0) {
                 const user = data.data[0];
                 const result = { ok: true, id: user.id, name: user.name };
-                invUsernameCache.set(clean, result);
+                invUsernameCache.set(key, result); // cache HANYA kalau found
                 return result;
             }
-            const notFound = { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
-            invUsernameCache.set(clean, notFound);
-            return notFound;
+            // Not found — TIDAK dicache, biar bisa dicoba lagi
+            return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
         } catch(e) {
             if (i === 1) return { ok: 'warn', msg: 'Koneksi lambat, coba lagi' };
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 600));
         }
     }
 }
@@ -1321,7 +1322,7 @@ function invTriggerUserLookup(username) {
         if (el) el.style.display = 'flex';
     };
 
-    if (!username || username.trim().length < 3) {
+    if (!username || username.trim().length < 5) {
         show(empty);
         lookup.style.borderColor = '';
         return;
@@ -1357,7 +1358,7 @@ function invTriggerUserLookup(username) {
             lookup.style.borderColor = result.ok === 'warn' ? 'var(--warning)' : 'var(--danger)';
             show(err);
         }
-    }, 800);
+    }, 1200);
 }
 
 function invResetUserLookup() {
