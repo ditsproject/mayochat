@@ -1216,6 +1216,7 @@ function invClearRaw() {
         'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
     invLastInvoiceText = '';
     invResetUserLookup();
+    invUsernameCache.clear();
     // Reset pills ke state awal
     ['invPillRobuxVal','invPillUserVal','invPillPassVal'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = '-';
@@ -1252,24 +1253,54 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') warmUpWorker();
 });
 
+// Cache hasil lookup biar ga perlu hit Worker terus
+const invUsernameCache = new Map();
+
 async function checkRobloxUsername(username) {
     if (!username.trim()) return { ok: false, msg: 'Username kosong' };
-    const clean = username.trim().replace(/\s+/g, '');
-    try {
-        const res = await fetch(ROBLOX_PROXY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usernames: [clean] }),
-        });
-        if (!res.ok) throw new Error('Worker error ' + res.status);
-        const data = await res.json();
-        if (data?.data && data.data.length > 0) {
-            const user = data.data[0];
-            return { ok: true, id: user.id, name: user.name };
+    const clean = username.trim().replace(/\s+/g, '').toLowerCase();
+
+    // Cek cache dulu
+    if (invUsernameCache.has(clean)) {
+        return invUsernameCache.get(clean);
+    }
+
+    const fetchWithTimeout = async (ms) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), ms);
+        try {
+            const res = await fetch(ROBLOX_PROXY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usernames: [clean] }),
+                signal: controller.signal,
+            });
+            clearTimeout(timer);
+            if (!res.ok) throw new Error('Worker error ' + res.status);
+            return await res.json();
+        } catch(e) {
+            clearTimeout(timer);
+            throw e;
         }
-        return { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
-    } catch(e) {
-        return { ok: 'warn', msg: 'Tidak bisa cek username, coba lagi' };
+    };
+
+    // Coba 1x dengan timeout 5 detik, kalau gagal retry 1x lagi
+    for (let i = 0; i < 2; i++) {
+        try {
+            const data = await fetchWithTimeout(5000);
+            if (data?.data && data.data.length > 0) {
+                const user = data.data[0];
+                const result = { ok: true, id: user.id, name: user.name };
+                invUsernameCache.set(clean, result); // simpan ke cache
+                return result;
+            }
+            const notFound = { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
+            invUsernameCache.set(clean, notFound);
+            return notFound;
+        } catch(e) {
+            if (i === 1) return { ok: 'warn', msg: 'Koneksi lambat, coba lagi' };
+            await new Promise(r => setTimeout(r, 500));
+        }
     }
 }
 
