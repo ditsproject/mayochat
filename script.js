@@ -1287,17 +1287,20 @@ async function checkRobloxUsername(username) {
     // Coba 1x dengan timeout 5 detik, kalau gagal retry 1x lagi
     for (let i = 0; i < 2; i++) {
         try {
+            console.log(`[lookup] attempt ${i+1} for "${clean}"`);
             const data = await fetchWithTimeout(5000);
+            console.log(`[lookup] response:`, data);
             if (data?.data && data.data.length > 0) {
                 const user = data.data[0];
                 const result = { ok: true, id: user.id, name: user.name };
-                invUsernameCache.set(clean, result); // simpan ke cache
+                invUsernameCache.set(clean, result);
                 return result;
             }
             const notFound = { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
             invUsernameCache.set(clean, notFound);
             return notFound;
         } catch(e) {
+            console.log(`[lookup] attempt ${i+1} error:`, e.message);
             if (i === 1) return { ok: 'warn', msg: 'Koneksi lambat, coba lagi' };
             await new Promise(r => setTimeout(r, 500));
         }
