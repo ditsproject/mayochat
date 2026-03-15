@@ -868,7 +868,6 @@ body.dark .stat span { color: var(--text); }
     height: 24px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid var(--success);
     flex-shrink: 0;
     background: var(--bg2);
 }
