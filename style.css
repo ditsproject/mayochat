@@ -850,9 +850,14 @@ body.dark .stat span { color: var(--text); }
     padding: 0.375rem 0.625rem;
     color: var(--muted);
     font-size: 0.72rem;
+    min-height: 32px;
 }
 
-.inv-user-lookup-loading i { color: var(--pink); font-size: 0.75rem; }
+.inv-user-lookup-loading i {
+    color: var(--pink);
+    font-size: 0.75rem;
+    animation: fa-spin 1s linear infinite;
+}
 
 .inv-user-lookup-found {
     display: flex;
