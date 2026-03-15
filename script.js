@@ -620,6 +620,7 @@ function addTemplateEventListeners() {
 function handleQuickAction(type) {
     const map = {
         'order':1,'backup':4,'list':99,'error':7,'2step':23,
+        'qr':8,'queue':20,'prem':10,'thanks':14,'premium':15,
         'fix':25,'wrongpw':6,'estimation':9,'checklogin':2,
         'checkemail':3,'reset':11,'webproblem':21,'regencode':22,
         'gp':16,'gkmsk':5
@@ -1001,7 +1002,8 @@ function invExtractPassword(text) {
 
     const tryExtract = (m1) => {
         if (!m1) return '';
-        return m1.trim().replace(/^[🫧🌸✨👤🔑🛡\s*_]+|[🫧🌸✨👤🔑🛡\s*_]+$/g, '').trim();
+        // Hanya hapus emoji dan spasi di awal/akhir, biarkan karakter spesial (* _ - ! . # & ^)
+        return m1.trim().replace(/^[🫧🌸✨👤🔑🛡\s]+|[🫧🌸✨👤🔑🛡\s]+$/g, '').trim();
     };
 
     const em = text.match(emojiPat);
@@ -1283,6 +1285,25 @@ async function checkRobloxUsername(username) {
             throw e;
         }
     };
+
+    // Coba 1x dengan timeout 5 detik, kalau gagal retry 1x lagi
+    for (let i = 0; i < 2; i++) {
+        try {
+            const data = await fetchWithTimeout(5000);
+            if (data?.data && data.data.length > 0) {
+                const user = data.data[0];
+                const result = { ok: true, id: user.id, name: user.name };
+                invUsernameCache.set(clean, result);
+                return result;
+            }
+            const notFound = { ok: false, msg: `"${clean}" tidak ditemukan di Roblox` };
+            invUsernameCache.set(clean, notFound);
+            return notFound;
+        } catch(e) {
+            if (i === 1) return { ok: 'warn', msg: 'Koneksi lambat, coba lagi' };
+            await new Promise(r => setTimeout(r, 500));
+        }
+    }
 }
 
 // Live username lookup
