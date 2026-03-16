@@ -1207,26 +1207,37 @@ function invAutoParseAndGenerate() {
     if (username) invTriggerUserLookup(username);
 }
 
+// ==================== FIX: CLEAR RAW FUNCTION ====================
 function invClearRaw() {
     document.getElementById('invRawPaste').value = '';
     document.getElementById('fUser').value  = '';
     document.getElementById('fPass').value  = '';
     document.getElementById('fRobux').value = '';
     document.getElementById('fCodes').value = '';
-    document.getElementById('invParsedPreview').classList.add('show');
+    
+    // Reset output box
     document.getElementById('invOutputBox').textContent =
         'DETAIL PESANAN KAMU\n\n✨ Jumlah Robux: \n👤 Username: \n🔑 Password: \n🛡 Backup Code: ';
+    
+    // Reset invoice text
     invLastInvoiceText = '';
+    
+    // Reset user lookup
     invResetUserLookup();
-    invUsernameCache.clear();
-    // Reset pills ke state awal
-    ['invPillRobuxVal','invPillUserVal','invPillPassVal'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.textContent = '-';
-    });
-    const cv = document.getElementById('invPillCodesVal'); if (cv) cv.textContent = '0 kode';
-    ['invPillRobux','invPillUser','invPillPass','invPillCodes'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.className = 'inv-pill warn';
-    });
+    
+    // Clear all pills and set to warn state
+    document.getElementById('invPillRobuxVal').textContent = '-';
+    document.getElementById('invPillUserVal').textContent = '-';
+    document.getElementById('invPillPassVal').textContent = '-';
+    document.getElementById('invPillCodesVal').textContent = '0 kode';
+    
+    document.getElementById('invPillRobux').className = 'inv-pill warn';
+    document.getElementById('invPillUser').className = 'inv-pill warn';
+    document.getElementById('invPillPass').className = 'inv-pill warn';
+    document.getElementById('invPillCodes').className = 'inv-pill warn';
+    
+    // SHOW preview (pills tetap visible dengan value kosong)
+document.getElementById('invParsedPreview').classList.add('show');
     showToast('🧹 Cleared!');
 }
 

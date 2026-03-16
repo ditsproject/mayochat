@@ -846,7 +846,7 @@ body.dark .stat span { color: var(--text); }
     flex-shrink: 0;
 }
 
-/* BARU */
+/* ==================== FIXED: LOADING SPINNER ==================== */
 .inv-user-lookup-loading {
     display: flex;
     align-items: center;
@@ -857,7 +857,49 @@ body.dark .stat span { color: var(--text); }
     min-height: 32px;
 }
 
-.inv-user-lookup-loading i { color: var(--pink); font-size: 0.75rem; }
+/* Avatar icon kiri */
+.inv-user-lookup-loading > i:first-child {
+    font-size: 0.75rem;
+    color: var(--border);
+    flex-shrink: 0;
+}
+
+/* Text di tengah - ambil space yang tersisa */
+.inv-user-lookup-loading > span {
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* Spinner container - push ke kanan */
+.inv-user-lookup-loading .inv-loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-left: auto;
+}
+
+/* Actual spinner animation */
+.inv-user-lookup-loading .inv-loading-spinner i {
+    font-size: 0;
+    width: 12px;
+    height: 12px;
+    position: relative;
+    display: block;
+    border: 2px solid #d0d0d0;       
+    border-top-color: #424242;       
+    border-radius: 50%;
+    animation: classicSpin 0.8s linear infinite;
+    box-sizing: border-box;
+}
+
+@keyframes classicSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 .inv-user-lookup-found {
     display: flex;
