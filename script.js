@@ -470,14 +470,12 @@ Pastikan datanya valid dan lengkap biar orderan kamu langsung di diproses tanpa 
         category: "security",
         content: `📌 Harus Generate Kode Backup Baru Yaa Kak
 
-Caranya sama kayak waktu pertama bikin.
-
 STEP BY STEP:
 
 1. Buka aplikasi Roblox
-2. Login → tekan ikon tiga garis (≡) → **Settings**
-3. Masuk ke **Security** → scroll ke bawah
-4. Klik **Buat / Generate** (klik 1x aja, tunggu sampai popup muncul biar gak error)
+2. Login → tekan ikon tiga garis (≡) → Settings
+3. Masuk ke Security → scroll ke bawah
+4. Klik Buat / Generate (klik 1x aja, tunggu sampai popup muncul biar gak error)
 5. Masukkan kode verifikasi dari email
 6. Tunggu 5–10 detik sampai 10 kode muncul
 7. Screenshot semua kodenya buat kamu simpan
