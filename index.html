@@ -48,7 +48,7 @@
     <div class="container-main">
         <div class="container-banner">
             <div class="image-banner-hero">
-                <img src="foto/banner.png">
+                <img src="foto/banner2.jpeg" alt="Banner Mayoblox">
             </div>
             <div class="title-banner-hero">
                 <div>
@@ -259,42 +259,34 @@
                             <button class="copy-btn" onclick="invCopyInvoice()">
                                 <i class="fas fa-copy"></i> Copy ke Telegram
                             </button>
-                                                   
-                          <!-- USER LOOKUP CARD -->
-<div class="inv-user-lookup" id="invUserLookup">
-
-    <!-- STATE: belum ada username -->
-    <div class="inv-user-lookup-empty" id="invUserEmpty">
-        <i class="fas fa-user-circle" style="font-size: 24px;"></i>
-        <span style="font-size: 12px;">Username Roblox</span>
-    </div>
-
-    <!-- STATE: username ditemukan -->
-    <div class="inv-user-lookup-found" id="invUserFound" style="display:none;">
-        <img class="inv-user-avatar" id="invUserAvatar" src="" alt="">
-        <div class="inv-user-info">
-            <div class="inv-user-name-wrap">
-                <span class="inv-user-name" id="invUserName"></span>
-                <img class="inv-user-premium" id="invUserPremium" src="foto/prem.png" alt="Premium" title="Roblox Premium" style="display:none;">
-            </div>
-        </div>
-        <i class="fas fa-check-circle inv-user-check" style="font-size: 14px;"></i>
-    </div>
-
-    <!-- STATE: username tidak ditemukan / error -->
-    <div class="inv-user-lookup-err" id="invUserErr" style="display:none;">
-        <i class="fas fa-times-circle"></i>
-        <span id="invUserErrTxt">Username tidak ditemukan</span>
-    </div>
-
-    <!-- STATE: sedang mencari -->
-    <div class="inv-user-lookup-loading" id="invUserLoading" style="display:none;">
-        <i class="fas fa-user-circle inv-loading-icon" style="font-size: 24px;"></i>
-        <div class="inv-name-skeleton" style="height: 10px;"></div>
-        <div class="inv-loading-spinner" style="height: 14px; width: 14px;"></div>
-    </div>
-
-</div>
+                            <!-- USER LOOKUP CARD -->
+                            <div class="inv-user-lookup" id="invUserLookup">
+                                <div class="inv-user-lookup-empty" id="invUserEmpty">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>Username Roblox</span>
+                                </div>
+                                <div class="inv-user-lookup-found" id="invUserFound" style="display:none;">
+                                    <img class="inv-user-avatar" id="invUserAvatar" src="" alt="">
+                                    <div class="inv-user-info">
+                                        <div class="inv-user-name-wrap">
+                                            <span class="inv-user-name" id="invUserName"></span>
+                                            <img class="inv-user-premium" id="invUserPremium" src="foto/prem.png" alt="Premium" title="Roblox Premium" style="display:none;">
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-check-circle inv-user-check"></i>
+                                </div>
+                                <div class="inv-user-lookup-err" id="invUserErr" style="display:none;">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span id="invUserErrTxt">Username tidak ditemukan</span>
+                                </div>
+                                <div class="inv-user-lookup-loading" id="invUserLoading" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Mengecek username...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- TAB PANE: BACKUP CODE -->
                 <div id="paneBackup" class="tools-pane" style="display:none;">
