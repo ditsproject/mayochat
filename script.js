@@ -490,7 +490,7 @@ function inv4SetStatus(id, cls, text) {
 }
 function inv4UpdateStatuses() {
     const r = document.getElementById('inv4Robux').value.trim();
-    inv4SetStatus('inv4StatusRobux', r?'ok':'warn', r?'✓ terisi':'—');
+    inv4SetStatus('inv4StatusRobux', r?'ok':'warn', r?'✓':'—');
     const cR = document.getElementById('inv4CardRobux'); if(cR) { cR.classList.toggle('state-ok',!!r); cR.classList.remove('state-err'); }
 
     const u = document.getElementById('inv4User').value.trim();
@@ -498,7 +498,7 @@ function inv4UpdateStatuses() {
     if (!u) { inv4SetStatus('inv4StatusUser','warn','—'); const cU=document.getElementById('inv4CardUser'); if(cU){cU.classList.remove('state-ok','state-err');} }
 
     const p = document.getElementById('inv4Pass').value.trim();
-    inv4SetStatus('inv4StatusPass', p?'ok':'warn', p?'✓ terisi':'—');
+    inv4SetStatus('inv4StatusPass', p?'ok':'warn', p?'✓':'—');
     const cP = document.getElementById('inv4CardPass'); if(cP) { cP.classList.toggle('state-ok',!!p); cP.classList.remove('state-err'); }
 
     const n = inv4State.codes.length;
@@ -583,7 +583,7 @@ function inv4ShowAvatarFound(userId) {
     const card = document.getElementById('inv4CardUser');
     if (card) { card.classList.add('state-ok'); card.classList.remove('state-err'); }
 
-    inv4SetStatus('inv4StatusUser', 'ok', '✓ valid di Roblox');
+    inv4SetStatus('inv4StatusUser', 'ok', '✓');
 
     // cek premium — badge di pojok kanan bawah avatar
     fetch(ROBLOX_PROXY_URL + '/premium?userId=' + userId)
