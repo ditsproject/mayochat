@@ -11,7 +11,7 @@ export function renderApp() {
         <div class="nav-brand">
             <div class="logo">
                 <a href="#" class="logo-link" title="Alamat Bill Gates" id="logoLink">
-                    <img src="./foto/fas.png" alt="Logo" width="32" height="32">
+                    <img src="./foto/fas.png" alt="Logo" width="40" height="40">
                 </a>
                 <h1>Take Order</h1>
             </div>
