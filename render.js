@@ -145,7 +145,7 @@ export function renderApp() {
                         <div class="inv4-card-status" id="inv4StatusPass"></div>
                     </div>
                     <div class="inv4-card inv4-card-backup" id="inv4CardBackup">
-                        <div class="inv4-card-label">🛡 Backup Code</div>
+                        <div class="inv4-card-label">🔐 Backup Code</div>
                         <div class="inv4-chips-wrap" id="inv4ChipsWrap"></div>
                         <textarea class="inv4-card-input inv4-backup-raw" id="inv4BackupRaw" placeholder="Paste 5 kode backup…" rows="2" style="display:none;" oninput="inv4BackupRawChanged()"></textarea>
                         <div class="inv4-backup-footer">
