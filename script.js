@@ -156,7 +156,16 @@ function toggleTheme() {
     showToast(`${dark?'🌙 Dark':'☀️ Light'} mode aktif`);
 }
 function initializeTheme() {
-    if (localStorage.getItem('theme')==='dark') { document.body.classList.add('dark'); document.querySelector('#themeToggle i').className='fas fa-sun'; }
+    function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.remove('dark');
+        document.querySelector('#themeToggle i').className = 'fas fa-moon';
+    } else {
+        document.body.classList.add('dark');
+        document.querySelector('#themeToggle i').className = 'fas fa-sun';
+        if (!savedTheme) localStorage.setItem('theme', 'dark');
+    }
 }
 
 // ==================== TOGGLE TEMPLATES ====================
