@@ -7,7 +7,7 @@ const templatesData = [
     { id: 52, name: "Gabisa",                   category: "other",    content: `Untuk Robux via Login, tidak bisa beli sesuai budget ya kak.\nGak bisa: 50k pas dapet berapa, 100 robux pas berapa, dll.\n\nVia login cuma bisa pilih nominal yang ada di pricelist.\n\nKalau mau beli sesuai uang pas (misal 50k pas), itu lewat via Gamepass\nTapi via Gamepass pending 5–8 hari.` },
     { id: 14, name: "Terima Kasih",             category: "other",    content: `terimakacii kembali kakkk jangan lupa ganti pw dan reset kode backupnya yaahh       \n\nditunggu orderan berikutnya ^_^` },
     { id: 99, name: "Klik List",                category: "other", content: `aloo kak, gasss di klik nominal yang mau dibeli,\n\nisi data login akun kamu: usn, pw dan kode backup\n\nnanti otomatis muncul qr pembayaran.\nqr nya bisa untuk semua metode pembayaran, tinggal scan aja\n\nlalu mimin proses sesuai antrian ^,^` },
-    { id: 15, name: "Order Web",                category: "order",    content: `\n📌 Cara Order di Website\nBuka mayoblox.com/robux\nPakai Chrome atau Safari biar gak error.\n\n1. Pilih Robux via Login\n2. Klik Order via Website\n3. Isi: Usn, Pw, Kode Backup \nMasukkan nomor WhatsApp yang aktif (jangan asal)\n4. Ikuti tutorial di website\n5. Pilih nominal → bayar via QR` },
+    { id: 15, name: "Order Web",                category: "order",    content: `\n📌 Cara Order di Website\nBuka mayoblox.com/robux/checkout/via-login\nPakai Chrome atau Safari biar gak error.\n\n1. Pilih Robux via Login\n2. Klik Order via Website\n3. Isi: Usn, Pw, Kode Backup \nMasukkan nomor WhatsApp yang aktif (jangan asal)\n4. Ikuti tutorial di website\n5. Pilih nominal → bayar via QR` },
     { id: 8,  name: "Salah Klik QR",            category: "status",   content: `❗️ Salah Klik / Mau Ganti Nominal?\n\nKalau sudah klik harus tunggu sekitar 1 jam sampai transaksi batal otomatis baru bisa order lagi.\n\nOrdernya lewat website aja yaa kak biar ga nunggu.\n\nBuka mayoblox.com/robux di browser \nPilih "Robux via Login"` },
     { id: 20, name: "Bocil Rese Nanya Antrian", category: "other",    content: `udah masuk antrian kak ditunggu aja yaa kalo udah nanti di kabarin` },
     { id: 25, name: "Perbaikan Tele",           category: "problem",  content: `oke kak udah aku data ulang, wet yahh nanti di kabarin lagihh` },
@@ -155,8 +155,8 @@ function toggleTheme() {
     document.querySelector('#themeToggle i').className = dark?'fas fa-sun':'fas fa-moon';
     showToast(`${dark?'🌙 Dark':'☀️ Light'} mode aktif`);
 }
+
 function initializeTheme() {
-    function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
         document.body.classList.remove('dark');
